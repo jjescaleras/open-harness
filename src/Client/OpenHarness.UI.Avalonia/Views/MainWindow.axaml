@@ -63,12 +63,12 @@
                 Padding="16,12">
             <Grid ColumnDefinitions="Auto, *, Auto, Auto">
                 <ToggleButton Grid.Column="0"
-                              IsChecked="{Binding IsAuxPanelVisible}"
-                              HotKey="Ctrl+J"
-                              ToolTip.Tip="Toggle side panel (Ctrl+J)"
+                              IsChecked="{Binding IsMenuPanelVisible}"
+                              HotKey="Ctrl+B"
+                              ToolTip.Tip="Toggle menu (Ctrl+B)"
                               Classes="panel-toggle"
                               Margin="0,0,12,0">
-                    <TextBlock Text="◧" />
+                    <TextBlock Text="☰" />
                 </ToggleButton>
 
                 <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
@@ -106,26 +106,26 @@
                 </Button>
 
                 <ToggleButton Grid.Column="3"
-                              IsChecked="{Binding IsMenuPanelVisible}"
-                              HotKey="Ctrl+B"
-                              ToolTip.Tip="Toggle menu (Ctrl+B)"
+                              IsChecked="{Binding IsAuxPanelVisible}"
+                              HotKey="Ctrl+J"
+                              ToolTip.Tip="Toggle side panel (Ctrl+J)"
                               Classes="panel-toggle"
                               Margin="12,0,0,0">
-                    <TextBlock Text="☰" />
+                    <TextBlock Text="◨" />
                 </ToggleButton>
             </Grid>
         </Border>
 
         <Grid Grid.Row="1" ColumnDefinitions="Auto, *, Auto">
             <!-- ============================================== -->
-            <!-- LEFT: MULTI-PURPOSE PANEL (HIDDEN BY DEFAULT)  -->
+            <!-- RIGHT: MULTI-PURPOSE PANEL (HIDDEN BY DEFAULT) -->
             <!-- ============================================== -->
-            <Border Grid.Column="0"
+            <Border Grid.Column="2"
                     Width="300"
                     IsVisible="{Binding IsAuxPanelVisible}"
                     Background="{StaticResource ArmoniaBgSecondaryBrush}"
                     BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
-                    BorderThickness="0,0,1,0">
+                    BorderThickness="1,0,0,0">
                 <Grid RowDefinitions="Auto, *">
                     <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="16,12">
                         <TextBlock Grid.Column="0"
@@ -276,14 +276,14 @@
             </StackPanel>
 
             <!-- ============================================== -->
-            <!-- RIGHT: MENU PANEL (COLLAPSIBLE)                -->
+            <!-- LEFT: MENU PANEL (COLLAPSIBLE)                 -->
             <!-- ============================================== -->
-            <Border Grid.Column="2"
+            <Border Grid.Column="0"
                     Width="220"
                     IsVisible="{Binding IsMenuPanelVisible}"
                     Background="{StaticResource ArmoniaBgSecondaryBrush}"
                     BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
-                    BorderThickness="1,0,0,0"
+                    BorderThickness="0,0,1,0"
                     Padding="12,16">
                 <StackPanel Spacing="8">
                     <TextBlock Text="MENU"

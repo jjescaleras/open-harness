@@ -27,11 +27,11 @@ public partial class MainWindowViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(IsDashboardSelected))]
     private NavigationItemViewModel? _selectedMenuItem;
 
-    /// <summary>Right-hand menu panel; visible by default and collapsible.</summary>
+    /// <summary>Left-hand menu panel; visible by default and collapsible.</summary>
     [ObservableProperty]
     private bool _isMenuPanelVisible = true;
 
-    /// <summary>Left-hand multi-purpose panel; hidden by default.</summary>
+    /// <summary>Right-hand multi-purpose panel; hidden by default.</summary>
     [ObservableProperty]
     private bool _isAuxPanelVisible;
 
