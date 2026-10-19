@@ -1,183 +1,94 @@
-# Plan Maestro de Implementación: Open Harness (.NET 10 + EF Core 10 + PostgreSQL 17 + Pi RPC + Avalonia UI + JWT)
+# Plan Maestro de Implementación: Open Harness (.NET 10 + EF Core 10 + PostgreSQL 17 + Pi RPC + UI Armonia/Avalonia + JWT)
 
 ## 1. Visión Arquitectónica y Decisiones de Diseño
 
-Este plan define la implementación de extremo a extremo de **Open Harness**, una plataforma empresarial de orquestación de agentes de IA y ejecución controlada de herramientas (*tool-calling* y *sandboxing*), construida sobre las versiones más modernas del ecosistema .NET en Linux (Arch Linux / Wayland):
+Este plan define la implementación de extremo a extremo de **Open Harness**, una plataforma enterprise de orquestación de agentes de IA y ejecución controlada de herramientas (*tool-calling* y *sandboxing*), construida sobre las versiones más modernas del ecosistema .NET e integrada nativamente con **Pi (`pi.dev`)**:
 
 1. **Frontend UI (`Armonia` / `Avalonia UI` sobre .NET 10)**:
-   - Se estructura en dos capas estrictamente desacopladas:
-     - **`OpenHarness.Client.Core`**: SDK cliente puro en .NET 10 que encapsula comunicación HTTP, autenticación JWT reactiva (`JwtAuthenticationHandler` con `SemaphoreSlim(1, 1)`) y streaming en tiempo real (`HarnessSseClient` con `System.Net.ServerSentEvents.SseParser`).
-     - **`OpenHarness.UI.Avalonia`**: Capa visual multiplataforma basada en la plantilla `avalonia.mvvm` con **`CommunityToolkit.Mvvm`**, **`AvaloniaEdit`** para bloques de código/diffs coloreados y sistema de tokens de diseño **`ArmoniaDesignTokens.axaml`**.
-   - *Nota de compatibilidad*: Al separar `OpenHarness.Client.Core`, si el contenedor visual se despliega en Desktop (Linux/Windows/macOS), WebAssembly o un frontend externo, los contratos de API, autenticación JWT y streaming permanecen idénticos.
-
-2. **Motor del Agente con Integración Nativa de Pi (`pi.dev`) + Streaming SSE**:
-   - En lugar de reimplementar las herramientas de bajo nivel (`read`, `write`, `edit` con *fuzzy matching* de diffs, `bash`, `glob`, `grep`, compactación de contexto y skills) desde cero, `OpenHarness.Infrastructure` integra **Pi en modo RPC (`pi --mode rpc --no-session`)** mediante un puente asíncrono (**`PiRpcSessionBridge`**) sobre `stdin`/`stdout` en formato JSONL, manteniendo la abstracción **`IChatClient` (`Microsoft.Extensions.AI`)** para flexibilidad multi-proveedor.
+   - Se estructura en dos capas estrictamente separadas: un SDK cliente puro en .NET 10 (`OpenHarness.Client.Core`) que encapsula HTTP, autenticación JWT reactiva y streaming en tiempo real, y la capa visual multiplataforma (`OpenHarness.UI.Avalonia`) basada en **Avalonia UI** con patrón **MVVM (`CommunityToolkit.Mvvm 8.4`)**, `AvaloniaEdit` para diffs y un sistema de tokens de diseño (`ArmoniaDesignTokens.axaml`).
+   - *Nota de compatibilidad*: Al separar `OpenHarness.Client.Core`, si el contenedor visual se despliega en Desktop (Linux Wayland/X11, Windows, macOS), WebAssembly o un frontend externo con el sistema de diseño Armonia, los contratos de API, autenticación JWT y streaming permanecen idénticos.
+2. **Motor del Agente con Integración Nativa de Pi (`pi --mode rpc --no-session`) + Streaming SSE**:
+   - En lugar de reimplementar las herramientas de bajo nivel desde cero (`read`, `write`, `edit` con *fuzzy matching*, `bash`), `OpenHarness.Infrastructure` integra **Pi en modo RPC (`pi --mode rpc --no-session`)** mediante un puente asíncrono (`PiRpcSessionBridge` sobre `stdin`/`stdout` JSONL), manteniendo la abstracción `IChatClient` (`Microsoft.Extensions.AI`) para flexibilidad multi-proveedor.
    - **PostgreSQL 17 (vía EF Core 10)** es la única fuente de verdad de las sesiones, turnos y auditoría de herramientas (por ello se invoca `pi` con `--no-session`).
-   - Las solicitudes de confirmación (`extension_ui_request` de Pi o evaluación de `WorkspacePolicy`) pausan la ejecución de forma asíncrona sin bloquear hilos mediante **`IApprovalGate`** (`TaskCompletionSource<ApprovalDecision>`), se transmiten por **SSE nativo de ASP.NET Core 10 (`TypedResults.ServerSentEvents`)** a la UI de Avalonia, muestran el diálogo **`SandboxApprovalDialog`**, y al recibir `POST /api/v1/sessions/{id}/approvals` devuelven `extension_ui_response` al proceso `pi`.
-
-3. **Seguridad y Autenticación JWT Zero-Allocation (.NET 10 ↔ Avalonia UI)**:
-   - **Backend**: Emisión y validación en .NET 10 mediante **`JsonWebTokenHandler`** (`Microsoft.IdentityModel.JsonWebTokens`), `AddJwtBearer` con `MapInboundClaims = false`, **Access Tokens** de corta vida (10 minutos) y **Refresh Tokens rotatorios** de 7 días almacenados en PostgreSQL como hash **`SHA-256`**.
-   - **Detección de robo por familia (`FamilyId`)**: Si se reutiliza un Refresh Token previamente revocado o rotado, se invalida toda la cadena de esa sesión (`FamilyId`) en una sola operación atómica con `ExecuteUpdateAsync`.
-   - **Frontend**: `JwtAuthenticationHandler` (`DelegatingHandler`) sincronizado con `SemaphoreSlim(1, 1)` para refresco transparente ante `401 Unauthorized` sin condiciones de carrera, respaldado por **`PlatformSecureTokenStorage`** (Keyring/LibSecret en Linux, DPAPI en Windows, Keychain en macOS).
-
-4. **Persistencia Moderna (PostgreSQL 17 + Entity Framework Core 10)**:
-   - Contenedor `pgvector/pgvector:pg17` en `docker-compose.yml` con extensiones `vector`, `uuid-ossp` y `pg_trgm`.
-   - `Npgsql.EntityFrameworkCore.PostgreSQL` (v10) con `EnableDynamicJson()`, `AddDbContextPool<OpenHarnessDbContext>`, `EnableRetryOnFailure(5)` y `UseSnakeCaseNamingConvention()`.
-   - Entidades en esquema `harness` con claves primarias secuenciales **`Guid.CreateVersion7()`**, documentos tipados con `.ToJson()`, columnas nativas `jsonb` con índices **GIN (`jsonb_path_ops`)**, concurrencia optimista con `xmin` e indexación vectorial **HNSW (`vector(1536)`)**.
+   - Las solicitudes de confirmación (`extension_ui_request` de Pi o evaluación de `WorkspacePolicy`) pausan la ejecución de forma asíncrona (`IApprovalGate` con `TaskCompletionSource<ApprovalDecision>`), se envían por **Server-Sent Events (SSE) nativo de ASP.NET Core 10 (`TypedResults.ServerSentEvents`)** a la UI de Avalonia (`System.Net.ServerSentEvents.SseParser`), muestran el `SandboxApprovalDialog`, y al recibir `POST /api/v1/sessions/{id}/approvals` devuelven `extension_ui_response` al proceso `pi`.
+3. **Seguridad y Autenticación JWT Zero-Allocation**:
+   - Emisión y validación en .NET 10 mediante `JsonWebTokenHandler` (`Microsoft.IdentityModel.JsonWebTokens`), `AddJwtBearer` con `MapInboundClaims = false`, **Access Tokens** de corta vida (10 min) y **Refresh Tokens rotatorios** (7 días) en PostgreSQL con detección automática de robo de sesión por familia (`FamilyId`) mediante `ExecuteUpdateAsync`.
+4. **Persistencia Moderna (EF Core 10 + PostgreSQL 17)**:
+   - Contenedor `pgvector/pgvector:pg17` con extensiones `vector`, `uuid-ossp` y `pg_trgm`.
+   - Uso de `Npgsql.EntityFrameworkCore.PostgreSQL 10.0` con `EnableDynamicJson()`, `AddDbContextPool`, `EnableRetryOnFailure` y `UseSnakeCaseNamingConvention()`.
+   - Claves primarias secuenciales `Guid.CreateVersion7()`, mapeo `.ToJson()` para configuraciones/métricas y columnas nativas `jsonb` con índices **GIN (`jsonb_path_ops`)** para argumentos y resultados de herramientas, concurrencia optimista con `xmin` e indexación vectorial **HNSW (`pgvector`)** para memoria semántica.
 
 ---
 
-## 2. Catálogo de Versiones y Paquetes NuGet (Central Package Management)
+## 2. Arquitectura de Integración (.NET 10 ↔ Pi RPC ↔ PostgreSQL 17 ↔ Avalonia UI)
+
+1. `POST /api/v1/sessions/{id}/prompt` persiste el `ConversationTurn` del usuario en PostgreSQL y envía `{"type": "prompt", "message": "..."}` por `stdin` al proceso `pi --mode rpc --no-session`.
+2. `PiRpcSessionBridge` lee el flujo JSONL de `stdout`:
+   - `message_update` -> emite evento SSE `text.delta` / `thinking.delta`.
+   - `tool_execution_start` -> registra `ToolExecution` (`jsonb`) en PostgreSQL y emite `tool.started`.
+   - `extension_ui_request` (o regla de `WorkspacePolicy`) -> pausa en `IApprovalGate`, emite `sandbox.approval_required` a Avalonia UI y, tras `POST /api/v1/sessions/{id}/approvals`, envía `extension_ui_response` a `pi`.
+   - `tool_execution_end` -> actualiza `ToolExecution` (`Result jsonb`, `DurationMs`) y emite `tool.completed`.
+   - `agent_end` -> persiste el `ConversationTurn` del asistente con `TokenUsage` (`.ToJson()`) y emite `turn.completed`.
+
+---
+
+## 3. Catálogo de Versiones y Paquetes NuGet
 
 | Capa | Paquete / Tecnología | Versión | Propósito |
 |---|---|---|---|
-| **SDK / Runtime** | `.NET SDK` / `C#` | `10.0.113` / `C# 14` | Runtime unificado con soporte de solución `.slnx` y mejoras AOT/Span. |
-| **Backend Auth** | `Microsoft.AspNetCore.Authentication.JwtBearer` | `10.0.13` | Middleware de autenticación JWT Bearer en ASP.NET Core 10. |
-| **Datos / ORM** | `Microsoft.EntityFrameworkCore` | `10.0.13` | Núcleo ORM Entity Framework Core 10 (`ToJson`, `ExecuteUpdateAsync`). |
-| **Datos / ORM** | `Npgsql.EntityFrameworkCore.PostgreSQL` | `10.0.3` | Proveedor oficial EF Core 10 para PostgreSQL 17 (`jsonb`, `xmin`). |
-| **Datos / Convenciones** | `EFCore.NamingConventions` | `10.0.1` | Convención automática `snake_case` para tablas, columnas e índices. |
-| **Datos / Vectores** | `Pgvector.EntityFrameworkCore` | `0.3.0` | Soporte de columnas `vector(1536)` e índices `hnsw` en EF Core 10. |
-| **Motor IA** | `Microsoft.Extensions.AI` | `10.11.0` | Abstracción unificada `IChatClient`, streaming y `AIFunction`. |
-| **Motor Agéntico RPC** | `pi` (`pi.dev` CLI) | Local CLI (`--mode rpc`) | Ejecución de herramientas de código, diffs fuzzy y confirmaciones RPC JSONL. |
-| **Frontend UI** | `Avalonia` + `Avalonia.Themes.Fluent` | `12.1.4` | Renderizado UI multiplataforma acelerado por GPU sobre .NET 10 (Wayland/X11). |
-| **Frontend MVVM** | `CommunityToolkit.Mvvm` | `8.4.2` | Source Generators (`[ObservableProperty]`, `[RelayCommand]`, `IMessenger`). |
-| **Editor / Diffs** | `Avalonia.AvaloniaEdit` | `12.0.0` | Bloques de código, resaltado de sintaxis, diffs y visor de herramientas. |
-| **Pruebas** | `xunit` + `Testcontainers.PostgreSql` | `2.9.3` / `4.16.0` | Pruebas unitarias y de integración contra PostgreSQL 17 real en contenedor. |
+| **SDK / Runtime** | `.NET SDK` / `C#` | `10.0.x` / `C# 14` | Runtime unificado con soporte de solución `.slnx` y mejoras AOT/Span. |
+| **Motor Agéntico RPC** | `pi` CLI (`pi.dev`) | `latest` (`--mode rpc --no-session`) | Ejecución de herramientas de código, edición con fuzzy matching y bash sobre JSONL. |
+| **Backend Auth** | `Microsoft.AspNetCore.Authentication.JwtBearer` | `10.0.*` | Middleware de autenticación JWT Bearer en ASP.NET Core 10. |
+| **Backend Auth** | `Microsoft.IdentityModel.JsonWebTokens` | `8.x` / `10.0.*` | `JsonWebTokenHandler` de alto rendimiento y cero asignaciones innecesarias. |
+| **Datos / ORM** | `Npgsql.EntityFrameworkCore.PostgreSQL` | `10.0.*` | Proveedor oficial EF Core 10 para PostgreSQL 17. |
+| **Datos / Naming** | `EFCore.NamingConventions` | `10.0.*` | Convención automática `snake_case` para tablas, columnas e índices en PostgreSQL. |
+| **Datos / Vectores** | `Pgvector.EntityFrameworkCore` | `0.3.*` | Soporte de columnas `vector(1536)` e índices `hnsw` en EF Core 10. |
+| **Motor IA** | `Microsoft.Extensions.AI` | `9.x` / `10.0.*` | Abstracción unificada `IChatClient` para flexibilidad multi-proveedor. |
+| **Frontend UI** | `Avalonia` + `Avalonia.Themes.Fluent` | `11.3.*` / `12.1.*` | Renderizado UI multiplataforma acelerado por GPU sobre .NET 10. |
+| **Frontend MVVM** | `CommunityToolkit.Mvvm` | `8.4.*` | Source Generators (`[ObservableProperty]`, `[RelayCommand]`, `IMessenger`). |
+| **Editor / Diffs** | `Avalonia.AvaloniaEdit` + `TextMateSharp` | `11.2.*` | Bloques de código, resaltado de sintaxis, diffs y terminal virtualizada. |
+| **Streaming Cliente** | `System.Net.ServerSentEvents` / `SignalR.Client` | `10.0.*` | Consumo nativo de streams SSE (`SseParser`) y WebSockets autenticados. |
 
 ---
 
-## 3. Estructura de la Solución (`OpenHarness.slnx`)
+## 4. Estructura de la Solución (`OpenHarness.slnx`)
 
-```text
-open-harness/
-├── OpenHarness.slnx                          # Formato XML moderno de solución .NET 10
-├── Directory.Build.props                     # TargetFramework=net10.0, LangVersion=14.0, Nullable=enable
-├── Directory.Packages.props                  # Central Package Management (CPM)
-├── docker-compose.yml                        # PostgreSQL 17 (pgvector/pgvector:pg17) + init scripts
-├── PLAN_IMPLEMENTACION_HARNESS.md            # Plan maestro de arquitectura e implementación
-├── .speckit/                                 # Artefactos SDD (Spec-Driven Development)
-│   ├── constitution.md                       # Principios arquitectónicos, estándares y restricciones
-│   └── features/
-│       └── 001-open-harness-platform/
-│           ├── spec.md                       # Requisitos funcionales (FR-###), criterios (SC-###) y casos límite
-│           ├── specify.md                    # Copia espejo de compatibilidad Spec-Kit
-│           ├── plan.md                       # Plan técnico detallado de la funcionalidad
-│           ├── tasks.md                      # Desglose de tareas accionables por fases con trazabilidad
-│           └── checklist.md                  # Puertas de calidad y verificación
-├── src/
-│   ├── Backend/
-│   │   ├── OpenHarness.Domain/               # Entidades con Guid.CreateVersion7(), ValueObjects, Enums
-│   │   ├── OpenHarness.Application/          # Vertical Slices (Auth, Sessions, Approvals, Workspaces)
-│   │   ├── OpenHarness.Infrastructure/       # EF Core 10 DbContext, Npgsql, JwtTokenProvider, PiRpcSessionBridge
-│   │   └── OpenHarness.Api/                  # Minimal APIs .NET 10, TypedResults.ServerSentEvents, Auth endpoints
-│   └── Client/
-│       ├── OpenHarness.Client.Core/          # SDK HTTP, JwtAuthenticationHandler, HarnessSseClient
-│       └── OpenHarness.UI.Avalonia/          # Vistas AXAML, ArmoniaDesignTokens, ViewModels MVVM, SecureStorage
-└── tests/
-    ├── OpenHarness.UnitTests/                # Pruebas unitarias de dominio y aplicación
-    └── OpenHarness.IntegrationTests/         # Pruebas de integración con Testcontainers.PostgreSql
-```
+- `OpenHarness.slnx`: Formato XML moderno de solución .NET 10.
+- `Directory.Build.props`: `TargetFramework=net10.0`, `LangVersion=14.0`, `Nullable=enable`.
+- `Directory.Packages.props`: Central Package Management (CPM).
+- `docker-compose.yml`: PostgreSQL 17 (`pgvector/pgvector:pg17`).
+- `.speckit/`: Artefactos de Spec-Driven Development (`constitution.md` y `features/001-open-harness-core/`).
+- `src/Backend/OpenHarness.Domain`: Entidades con `Guid.CreateVersion7()`, ValueObjects y Enums.
+- `src/Backend/OpenHarness.Application`: Abstracciones y Vertical Slices (`Auth`, `Sessions`, `Approvals`, `Workspaces`).
+- `src/Backend/OpenHarness.Infrastructure`: EF Core 10 `OpenHarnessDbContext`, `Npgsql`, `JwtTokenProvider`, `PiRpcSessionBridge`.
+- `src/Backend/OpenHarness.Api`: Minimal APIs .NET 10, `TypedResults.ServerSentEvents`.
+- `src/Client/OpenHarness.Client.Core`: SDK HTTP, `JwtAuthenticationHandler` (`SemaphoreSlim`), `HarnessSseClient`.
+- `src/Client/OpenHarness.UI.Avalonia`: Vistas AXAML, `ArmoniaDesignTokens.axaml`, ViewModels MVVM, `PlatformSecureTokenStorage`.
+- `tests/OpenHarness.UnitTests` y `tests/OpenHarness.IntegrationTests`.
 
 ---
 
-## 4. Diseño de Base de Datos (PostgreSQL 17 + EF Core 10)
+## 5. Diseño de Base de Datos (PostgreSQL 17 + EF Core 10)
 
-### 4.1. Entidades Principales (`Schema: harness`)
-Todas las entidades heredan de `AuditableEntity` y generan su clave primaria en C# mediante **`Guid.CreateVersion7()`** para garantizar localidad en los índices B-Tree de PostgreSQL:
+### 5.1. Entidades Principales (`Schema: harness`)
+1. **`User` (`users`)**: `Id` (`Guid.CreateVersion7()`), `Email` (único), `DisplayName`, `PasswordHash`, `Role`, `IsActive`, timestamps de auditoría.
+2. **`RefreshToken` (`refresh_tokens`)**: `Id` (`Guid.CreateVersion7()`), `UserId`, `TokenHash` (`SHA-256` hex de 64 caracteres), `FamilyId` (`Guid.CreateVersion7()`), `ExpiresAtUtc`, `RevokedAtUtc`, `ReplacedByTokenHash`.
+3. **`WorkspacePolicy` (`workspace_policies`)**: `Id` (`Guid.CreateVersion7()`), `OwnerId`, `Name`, `RootPath`, `SandboxMode`, `ApprovalPolicy`, y `RulesConfig` mapeado con `.ToJson("rules_config")`.
+4. **`AgentSession` (`agent_sessions`)**: `Id` (`Guid.CreateVersion7()`), `UserId`, `WorkspacePolicyId`, `ParentSessionId`, `Title`, `Status`, `ModelConfig` (`.ToJson("model_config")`), `TotalInputTokens`, `TotalOutputTokens`, y `RowVersion` (`xmin` para concurrencia optimista).
+5. **`ConversationTurn` (`conversation_turns`)**: `Id` (`Guid.CreateVersion7()`), `SessionId`, `SequenceNumber` (índice único compuesto con `SessionId`), `Role`, `Content`, `ThinkingContent`, `TokenUsage` (`.ToJson("token_usage")`), `Embedding` (`vector(1536)` con índice `hnsw`).
+6. **`ToolExecution` (`tool_executions`)**: `Id` (`Guid.CreateVersion7()`), `SessionId`, `TurnId`, `CallId`, `ToolName`, `Arguments` (`jsonb` con índice GIN `jsonb_path_ops`), `Result` (`jsonb` con índice GIN `jsonb_path_ops`), `Status`, `RequiresApproval`, `ApprovedByUserId`, `DurationMs`, `ExitCode`.
 
-1. **`User` (`harness.users`)**:
-   - `Id` (`uuid v7`), `Email` (índice único), `DisplayName`, `PasswordHash` (Argon2id/PBKDF2), `Role` (`Admin`, `Operator`, `Viewer`), `IsActive`, `CreatedAtUtc`, `UpdatedAtUtc`.
-2. **`RefreshToken` (`harness.refresh_tokens`)**:
-   - `Id` (`uuid v7`), `UserId` (FK a `User`), `TokenHash` (`SHA-256` hex de 64 caracteres, índice único; nunca se almacena el token en claro), `FamilyId` (`uuid v7` indexado para invalidación atómica de toda la familia ante reutilización de token revocado), `ExpiresAtUtc`, `RevokedAtUtc`, `ReplacedByTokenHash`, `RevocationReason`.
-3. **`WorkspacePolicy` (`harness.workspace_policies`)**:
-   - `Id` (`uuid v7`), `OwnerId` (FK a `User`), `Name`, `RootPath`, `SandboxMode` (`ReadOnly`, `WorkspaceWrite`, `DangerFullAccess`), `ApprovalPolicy` (`AlwaysAsk`, `OnDangerousAction`, `Never`), y `RulesConfig` (`WorkspaceRulesConfig` mapeado con `.ToJson("rules_config")`).
-4. **`AgentSession` (`harness.agent_sessions`)**:
-   - `Id` (`uuid v7`), `UserId` (FK a `User`), `WorkspacePolicyId` (FK a `WorkspacePolicy`), `ParentSessionId` (FK opcional auto-referencial para jerarquía de subagentes), `Title`, `Status` (`Idle`, `Streaming`, `WaitingForApproval`, `Completed`, `Faulted`), `ModelConfig` (`AgentModelConfig` mapeado con `.ToJson("model_config")`), `TotalInputTokens`, `TotalOutputTokens`, y `RowVersion` (`uint` mapeado a la columna de sistema `xmin` de PostgreSQL para concurrencia optimista).
-5. **`ConversationTurn` (`harness.conversation_turns`)**:
-   - `Id` (`uuid v7`), `SessionId` (FK a `AgentSession`), `SequenceNumber` (índice único compuesto `(SessionId, SequenceNumber)`), `Role` (`System`, `User`, `Assistant`, `Tool`), `Content`, `ThinkingContent`, `TokenUsage` (`TurnTokenUsage` mapeado con `.ToJson("token_usage")`), `Embedding` (`Pgvector.Vector?` de dimensión `vector(1536)` con índice **`hnsw (embedding vector_cosine_ops)`**).
-6. **`ToolExecution` (`harness.tool_executions`)**:
-   - `Id` (`uuid v7`), `SessionId` (FK a `AgentSession`), `TurnId` (FK a `ConversationTurn`), `CallId` (identificador de llamada de Pi/LLM), `ToolName`, `Arguments` (`string` en columna nativa `jsonb` con índice **GIN `jsonb_path_ops`**), `Result` (`string?` en columna nativa `jsonb` con índice **GIN `jsonb_path_ops`**), `Status` (`PendingApproval`, `Running`, `Completed`, `Failed`, `Denied`), `RequiresApproval`, `ApprovedByUserId` (FK opcional a `User`), `DurationMs`.
-
-### 4.2. Características de EF Core 10 Aplicadas
-- **`NpgsqlDataSourceBuilder`**: Configurado con `EnableDynamicJson()` y `UseVector()`.
-- **`AddDbContextPool<OpenHarnessDbContext>`**: Configurado con `EnableRetryOnFailure(maxRetryCount: 5)`, `UseVector()`, `MigrationsHistoryTable("__ef_migrations_history", "harness")` y `UseSnakeCaseNamingConvention()`.
-- **`AuditableEntityInterceptor` (`SaveChangesInterceptor`)**: Inyecta `TimeProvider` de .NET 10 para asignar `CreatedAtUtc` y `UpdatedAtUtc` de forma determinista.
+### 5.2. Características de EF Core 10 Aplicadas
+- `NpgsqlDataSourceBuilder.EnableDynamicJson()` + `UseVector()` + `AddDbContextPool<OpenHarnessDbContext>` con `EnableRetryOnFailure(5)` y `UseSnakeCaseNamingConvention()`.
+- `AuditableEntityInterceptor` (`SaveChangesInterceptor`) inyectando `TimeProvider.System` de .NET 10.
+- `EF.CompileAsyncQuery` en las consultas críticas de validación de propiedad de sesión y lectura de historial.
 
 ---
 
-## 5. Flujo de Autenticación JWT de Extremo a Extremo (.NET 10 ↔ Avalonia UI)
+## 6. Hoja de Ruta por Fases
 
-1. **Login Inicial (`POST /api/v1/auth/login`)**:
-   - El backend valida credenciales y genera un **Access Token JWT** (10 min de vida, emitido con `JsonWebTokenHandler`) y un **Refresh Token** criptográfico aleatorio de 64 bytes (`RandomNumberGenerator.Fill`), guardando únicamente su hash `SHA-256` en PostgreSQL junto con un nuevo `FamilyId = Guid.CreateVersion7()`.
-2. **Almacenamiento Seguro en el Cliente (`PlatformSecureTokenStorage`)**:
-   - El **Access Token** reside exclusivamente en memoria (`AuthSessionState`).
-   - El **Refresh Token** se guarda cifrado en el llavero nativo del sistema operativo (LibSecret/Keyring en Linux, DPAPI en Windows, Keychain en macOS).
-3. **Refresco Reactivo sin Condiciones de Carrera (`JwtAuthenticationHandler`)**:
-   - Todas las peticiones HTTP y de streaming SSE atraviesan `JwtAuthenticationHandler` (`DelegatingHandler`).
-   - Ante un `401 Unauthorized`, el handler adquiere un **`SemaphoreSlim(1, 1)`**: el primer hilo invoca `POST /api/v1/auth/refresh`, rota el par de tokens y reintenta la solicitud; las peticiones concurrentes detectan que el token en memoria ya fue actualizado y reintentan directamente sin duplicar llamadas de refresco.
-   - Si el backend detecta que un Refresh Token revocado vuelve a presentarse, ejecuta un `ExecuteUpdateAsync` revocando todos los tokens activos de ese `FamilyId`.
-
----
-
-## 6. Motor del Agente con Pi (`pi --mode rpc`) y Streaming SSE
-
-### 6.1. Arquitectura de Comunicación (.NET 10 ↔ Pi RPC ↔ Avalonia UI)
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as Usuario (Avalonia UI)
-    participant API as Backend .NET 10 (JWT + SSE)
-    participant DB as PostgreSQL 17 (EF Core 10)
-    participant Pi as Proceso Pi (pi --mode rpc --no-session)
-
-    User->>API: POST /api/v1/sessions/{id}/prompt (Bearer JWT)
-    API->>DB: Guarda ConversationTurn (User)
-    API->>Pi: stdin -> {"type": "prompt", "message": "..."}
-    
-    loop Streaming de Eventos JSONL
-        Pi-->>API: stdout <- {"type": "message_update", "delta": "..."}
-        API-->>User: SSE -> event: text.delta
-        
-        Pi-->>API: stdout <- {"type": "tool_execution_start", "tool": "bash", "args": {...}}
-        API->>DB: Inserta ToolExecution (jsonb) en Postgres
-        API-->>User: SSE -> event: tool.started
-        
-        opt Si WorkspacePolicy requiere aprobación (Extension UI Request de Pi)
-            Pi-->>API: stdout <- {"type": "extension_ui_request", "method": "confirm", ...}
-            API->>DB: Marca AgentSession = WaitingForApproval
-            API-->>User: SSE -> event: sandbox.approval_required
-            User->>API: POST /api/v1/sessions/{id}/approvals (Approved: true)
-            API->>Pi: stdin -> {"type": "extension_ui_response", "confirmed": true}
-        end
-
-        Pi-->>API: stdout <- {"type": "tool_execution_end", "result": {...}}
-        API->>DB: Actualiza ToolExecution (DurationMs, Result jsonb)
-        API-->>User: SSE -> event: tool.completed
-    end
-
-    Pi-->>API: stdout <- {"type": "agent_end", "usage": {...}}
-    API->>DB: Guarda Turno Assistant + TokenUsage (.ToJson)
-    API-->>User: SSE -> event: turn.completed
-```
-
-### 6.2. Componentes Clave del Motor
-1. **`PiRpcSessionBridge`**:
-   - Encapsula el subproceso `pi --mode rpc --no-session` con redirección asíncrona de `StandardInput`, `StandardOutput` y `StandardError`.
-   - Expone `SendPromptAsync`, `SendApprovalResponseAsync` (`extension_ui_response`) y `ReadEventStreamAsync` (`IAsyncEnumerable<JsonDocument>`).
-2. **`IApprovalGate` (`InMemoryApprovalGate`)**:
-   - Gestiona solicitudes de aprobación en vuelo mediante un `ConcurrentDictionary<Guid, TaskCompletionSource<ApprovalDecision>>` para pausar de forma no bloqueante la ejecución de herramientas sujetas a `WorkspacePolicy`.
-3. **Streaming SSE Nativo (`.NET 10`)**:
-   - El endpoint `GET /api/v1/sessions/{id}/stream` devuelve `TypedResults.ServerSentEvents` transmitiendo eventos tipados (`text.delta`, `thinking.delta`, `tool.started`, `sandbox.approval_required`, `tool.completed`, `turn.completed`), consumidos en el cliente mediante `SseParser`.
-
----
-
-## 7. Plan de Trabajo por Fases y Estado
-
-| Fase | Alcance | Entregables y Criterios de Éxito |
-|---|---|---|
-| **Fase 1** | Documentación SDD, actualización del plan con Pi RPC, `OpenHarness.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `docker-compose.yml`, `OpenHarness.Domain` y `OpenHarness.Infrastructure` | Artefactos SDD validados, `OpenHarnessDbContext` configurado con EF Core 10, migración inicial `InitialHarnessSchema` generada y `dotnet build` sin errores. |
-| **Fase 2** | Seguridad JWT en .NET 10 | `JwtTokenProvider` (`JsonWebTokenHandler`), endpoints `/api/v1/auth/*`, rotación atómica y revocación por `FamilyId` con `ExecuteUpdateAsync`. |
-| **Fase 3** | Motor del Harness con Pi RPC + SSE | `PiRpcSessionBridge` (`pi --mode rpc --no-session`), `IApprovalGate` con `TaskCompletionSource` y streaming SSE nativo (`TypedResults.ServerSentEvents`). |
-| **Fase 4** | SDK Cliente (`OpenHarness.Client.Core`) | `JwtAuthenticationHandler` con `SemaphoreSlim(1, 1)`, `PlatformSecureTokenStorage` y `HarnessSseClient` (`SseParser`). |
-| **Fase 5** | Interfaz Gráfica (`OpenHarness.UI.Avalonia`) | `ArmoniaDesignTokens.axaml`, layout de 3 paneles (`avalonia.mvvm`), `AvaloniaEdit` para diffs de código y `SandboxApprovalDialog`. |
+- **Fase 1**: Actualizar `PLAN_IMPLEMENTACION_HARNESS.md` con la arquitectura de `Pi (--mode rpc)`, generar artefactos SDD en `.speckit/`, crear `OpenHarness.slnx`, `Directory.Build.props`, `Directory.Packages.props`, `docker-compose.yml`, `OpenHarness.Domain` y `OpenHarness.Infrastructure` (con `OpenHarnessDbContext` y la migración inicial `InitialHarnessSchema` de EF Core 10).
+- **Fase 2**: Seguridad JWT en .NET 10 (`JwtTokenProvider`, endpoints `/api/v1/auth/*`, rotación por `FamilyId`).
+- **Fase 3**: Motor del Harness con `PiRpcSessionBridge` (`pi --mode rpc --no-session`), `IApprovalGate` y streaming SSE nativo en `.NET 10`.
+- **Fase 4**: SDK Cliente (`OpenHarness.Client.Core`: `JwtAuthenticationHandler` con `SemaphoreSlim` y `HarnessSseClient`).
+- **Fase 5**: Interfaz gráfica `OpenHarness.UI.Avalonia` (`avalonia.mvvm`, layout de 3 paneles, `AvaloniaEdit` para diffs y `SandboxApprovalDialog`).
