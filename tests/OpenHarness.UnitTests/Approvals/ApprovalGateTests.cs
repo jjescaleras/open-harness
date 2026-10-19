@@ -53,3 +53,4 @@ public class ApprovalGateTests
         _gate.GetPendingApprovals().Should().BeEmpty();
     }
 }
+
