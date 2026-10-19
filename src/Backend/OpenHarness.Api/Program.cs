@@ -46,6 +46,7 @@ app.UseAuthorization();
 
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTimeOffset.UtcNow }));
 app.MapAuthEndpoints();
+app.MapSessionEndpoints();
 
 app.Run();
 

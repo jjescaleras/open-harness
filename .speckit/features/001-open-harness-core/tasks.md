@@ -86,7 +86,7 @@ Este documento contiene la lista detallada y estructurada de tareas accionables 
   - **Trazabilidad**: `FR-008`, `SC-005`, `EC-005`
   - **Criterio de Aceptación**: `IApprovalGate` gestiona `TaskCompletionSource<ApprovalDecision>` con timeout automático (5 minutos), resolviendo decisiones humanas y retornando respuesta `extension_ui_response` a Pi sin bloquear hilos.
 
-- [ ] **T3.4: Endpoints de Sesión y Streaming SSE Nativo**
+- [x] **T3.4: Endpoints de Sesión y Streaming SSE Nativo**
   - **Dependencias**: `T3.1`, `T3.3`
   - **Archivos Objetivo**: `src/Backend/OpenHarness.Api/Endpoints/SessionEndpoints.cs`
   - **Trazabilidad**: `FR-008`, `SC-005`

@@ -9,3 +9,4 @@ public sealed class PiRpcOptions
     public int StartupTimeoutSeconds { get; set; } = 5;
     public List<string> ExtraArgs { get; set; } = [];
 }
+
