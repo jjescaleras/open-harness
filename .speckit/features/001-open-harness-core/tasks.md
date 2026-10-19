@@ -40,25 +40,25 @@ Este documento contiene la lista detallada y estructurada de tareas accionables 
 
 ## Fase 2: Seguridad y Autenticación JWT Zero-Allocation
 
-- [ ] **T2.1: Proveedor Criptográfico y Generador de Tokens JWT**
+- [x] **T2.1: Proveedor Criptográfico y Generador de Tokens JWT**
   - **Dependencias**: `T1.3`
   - **Archivos Objetivo**: `src/Backend/OpenHarness.Infrastructure/Security/JwtTokenProvider.cs`, `src/Backend/OpenHarness.Application/Common/Interfaces/IJwtTokenProvider.cs`
   - **Trazabilidad**: `FR-004`, `SC-002`
   - **Criterio de Aceptación**: Emisión de Access Token JWT (10 min) utilizando `JsonWebTokenHandler` sin asignaciones superfluas en menos de 0.5 ms, y generación de Refresh Tokens criptográficos de 64 bytes (`RandomNumberGenerator.Fill`).
 
-- [ ] **T2.2: Casos de Uso de Autenticación y Rotación por FamilyId**
+- [x] **T2.2: Casos de Uso de Autenticación y Rotación por FamilyId**
   - **Dependencias**: `T1.4`, `T2.1`
   - **Archivos Objetivo**: `src/Backend/OpenHarness.Application/Features/Auth/*.cs`
   - **Trazabilidad**: `FR-004`, `FR-005`, `SC-003`, `EC-001`
   - **Criterio de Aceptación**: Implementación de comandos `Register`, `Login`, `RefreshToken` y `RevokeToken`. La rotación actualiza el token en base de datos almacenando su hash SHA-256 y manteniendo el `FamilyId`.
 
-- [ ] **T2.3: Detección Automática de Robo y Revocación Atómica**
+- [x] **T2.3: Detección Automática de Robo y Revocación Atómica**
   - **Dependencias**: `T2.2`
   - **Archivos Objetivo**: `src/Backend/OpenHarness.Application/Features/Auth/RefreshTokenCommand.cs`
   - **Trazabilidad**: `FR-005`, `SC-003`, `EC-001`
   - **Criterio de Aceptación**: Si un Refresh Token revocado es presentado, `ExecuteUpdateAsync` invalida en menos de 30 ms todos los tokens con el mismo `FamilyId`, denegando la autenticación con error `SessionCompromised`.
 
-- [ ] **T2.4: Endpoints de Autenticación Minimal API y Middleware JWT**
+- [x] **T2.4: Endpoints de Autenticación Minimal API y Middleware JWT**
   - **Dependencias**: `T2.2`, `T2.3`
   - **Archivos Objetivo**: `src/Backend/OpenHarness.Api/Endpoints/AuthEndpoints.cs`, `src/Backend/OpenHarness.Api/Program.cs`
   - **Trazabilidad**: `FR-004`, `SC-002`
@@ -80,7 +80,7 @@ Este documento contiene la lista detallada y estructurada de tareas accionables 
   - **Trazabilidad**: `FR-007`
   - **Criterio de Aceptación**: `IChatClient` de `Microsoft.Extensions.AI` implementado sobre el puente de Pi, garantizando desacoplamiento del resto de la aplicación.
 
-- [ ] **T3.3: Compuerta de Aprobación Asíncrona (`IApprovalGate`)**
+- [x] **T3.3: Compuerta de Aprobación Asíncrona (`IApprovalGate`)**
   - **Dependencias**: `T1.3`
   - **Archivos Objetivo**: `src/Backend/OpenHarness.Application/Common/Interfaces/IApprovalGate.cs`, `src/Backend/OpenHarness.Infrastructure/Security/InMemoryApprovalGate.cs`
   - **Trazabilidad**: `FR-008`, `SC-005`, `EC-005`
@@ -96,25 +96,25 @@ Este documento contiene la lista detallada y estructurada de tareas accionables 
 
 ## Fase 4: SDK Cliente Core
 
-- [ ] **T4.1: Clientes HTTP Fuertemente Tipados y Modelos de Contrato**
+- [x] **T4.1: Clientes HTTP Fuertemente Tipados y Modelos de Contrato**
   - **Dependencias**: `T2.4`, `T3.4`
   - **Archivos Objetivo**: `src/Client/OpenHarness.Client.Core/Http/*.cs`, `src/Client/OpenHarness.Client.Core/Models/*.cs`
   - **Trazabilidad**: `FR-009`
   - **Criterio de Aceptación**: Interfaces y clases `IAuthApiClient`, `ISessionsApiClient` y `IApprovalsApiClient` implementadas para consumo de la API de Open Harness.
 
-- [ ] **T4.2: DelegatingHandler de Autenticación con SemaphoreSlim**
+- [x] **T4.2: DelegatingHandler de Autenticación con SemaphoreSlim**
   - **Dependencias**: `T4.1`
   - **Archivos Objetivo**: `src/Client/OpenHarness.Client.Core/Http/JwtAuthenticationHandler.cs`
   - **Trazabilidad**: `FR-009`, `EC-004`
   - **Criterio de Aceptación**: Ante respuesta 401, el handler bloquea con `SemaphoreSlim(1, 1)`, refresca el token una única vez y reintenta todas las peticiones concurrentes encoladas de manera transparente.
 
-- [ ] **T4.3: Almacenamiento Seguro Multiplataforma**
+- [x] **T4.3: Almacenamiento Seguro Multiplataforma**
   - **Dependencias**: `T4.1`
   - **Archivos Objetivo**: `src/Client/OpenHarness.Client.Core/Storage/PlatformSecureTokenStorage.cs`
   - **Trazabilidad**: `FR-009`
   - **Criterio de Aceptación**: Almacenamiento y recuperación cifrada del Refresh Token utilizando `libsecret` en Linux, `DPAPI` en Windows y `Keychain` en macOS.
 
-- [ ] **T4.4: Cliente de Streaming SSE Reactivo**
+- [x] **T4.4: Cliente de Streaming SSE Reactivo**
   - **Dependencias**: `T4.1`
   - **Archivos Objetivo**: `src/Client/OpenHarness.Client.Core/Streaming/HarnessSseClient.cs`
   - **Trazabilidad**: `FR-009`
@@ -124,7 +124,7 @@ Este documento contiene la lista detallada y estructurada de tareas accionables 
 
 ## Fase 5: Interfaz de Usuario Avalonia con ArmoniaDesignTokens
 
-- [ ] **T5.1: Estilos Globales y ArmoniaDesignTokens**
+- [x] **T5.1: Estilos Globales y ArmoniaDesignTokens**
   - **Dependencias**: `T4.1`
   - **Archivos Objetivo**: `src/Client/OpenHarness.UI.Avalonia/Assets/Styles/ArmoniaDesignTokens.axaml`
   - **Trazabilidad**: `FR-010`
