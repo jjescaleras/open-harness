@@ -68,13 +68,13 @@ Este documento contiene la lista detallada y estructurada de tareas accionables 
 
 ## Fase 3: Motor del Agente Pi RPC, Streaming SSE y Aprobaciones
 
-- [ ] **T3.1: Puente de Comunicación Pi RPC (`PiRpcSessionBridge`)**
+- [x] **T3.1: Puente de Comunicación Pi RPC (`PiRpcSessionBridge`)**
   - **Dependencias**: `T1.3`
   - **Archivos Objetivo**: `src/Backend/OpenHarness.Infrastructure/Agents/Pi/PiRpcSessionBridge.cs`
   - **Trazabilidad**: `FR-006`, `SC-004`, `EC-002`, `EC-006`
   - **Criterio de Aceptación**: Proceso `pi --mode rpc --no-session` ejecutado con redirección asíncrona de `StandardInput`, `StandardOutput` y `StandardError`, manejando flujo JSONL, líneas malformadas y reinicio limpio ante caída abrupta.
 
-- [ ] **T3.2: Abstracción Multi-Proveedor IChatClient**
+- [x] **T3.2: Abstracción Multi-Proveedor IChatClient**
   - **Dependencias**: `T3.1`
   - **Archivos Objetivo**: `src/Backend/OpenHarness.Infrastructure/Agents/Adapters/PiChatClientAdapter.cs`
   - **Trazabilidad**: `FR-007`
