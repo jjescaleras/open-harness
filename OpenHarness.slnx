@@ -10,4 +10,8 @@
     <Project Path="src/Client/OpenHarness.Client.Core/OpenHarness.Client.Core.csproj" />
     <Project Path="src/Client/OpenHarness.UI.Avalonia/OpenHarness.UI.Avalonia.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OpenHarness.UnitTests/OpenHarness.UnitTests.csproj" />
+    <Project Path="tests/OpenHarness.IntegrationTests/OpenHarness.IntegrationTests.csproj" />
+  </Folder>
 </Solution>

@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using OpenHarness.Application.Common.Interfaces;
 using OpenHarness.Domain.Entities;
 
 namespace OpenHarness.Infrastructure.Persistence;
 
-public sealed class OpenHarnessDbContext(DbContextOptions<OpenHarnessDbContext> options) : DbContext(options)
+public sealed class OpenHarnessDbContext(DbContextOptions<OpenHarnessDbContext> options) : DbContext(options), IOpenHarnessDbContext
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();

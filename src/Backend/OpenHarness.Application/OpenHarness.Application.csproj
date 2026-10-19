@@ -5,5 +5,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.AI" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="BCrypt.Net-Next" />
   </ItemGroup>
 </Project>

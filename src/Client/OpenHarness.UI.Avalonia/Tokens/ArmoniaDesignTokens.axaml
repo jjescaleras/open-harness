@@ -1,0 +1,51 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Armonia Design System: Corporate Dark Palette -->
+    <Color x:Key="ArmoniaBgPrimaryColor">#0F1117</Color>
+    <Color x:Key="ArmoniaBgSecondaryColor">#161922</Color>
+    <Color x:Key="ArmoniaBgElevatedColor">#1F232E</Color>
+    <Color x:Key="ArmoniaBorderSubtleColor">#2A303F</Color>
+    <Color x:Key="ArmoniaBorderStrongColor">#3B4459</Color>
+
+    <Color x:Key="ArmoniaAccentPrimaryColor">#6366F1</Color>
+    <Color x:Key="ArmoniaAccentHoverColor">#4F46E5</Color>
+    <Color x:Key="ArmoniaSuccessColor">#10B981</Color>
+    <Color x:Key="ArmoniaWarningColor">#F59E0B</Color>
+    <Color x:Key="ArmoniaDangerColor">#EF4444</Color>
+
+    <Color x:Key="ArmoniaTextPrimaryColor">#F8FAFC</Color>
+    <Color x:Key="ArmoniaTextSecondaryColor">#94A3B8</Color>
+    <Color x:Key="ArmoniaTextMutedColor">#64748B</Color>
+
+    <!-- Solid Color Brushes -->
+    <SolidColorBrush x:Key="ArmoniaBgPrimaryBrush" Color="{StaticResource ArmoniaBgPrimaryColor}" />
+    <SolidColorBrush x:Key="ArmoniaBgSecondaryBrush" Color="{StaticResource ArmoniaBgSecondaryColor}" />
+    <SolidColorBrush x:Key="ArmoniaBgElevatedBrush" Color="{StaticResource ArmoniaBgElevatedColor}" />
+    <SolidColorBrush x:Key="ArmoniaBorderSubtleBrush" Color="{StaticResource ArmoniaBorderSubtleColor}" />
+    <SolidColorBrush x:Key="ArmoniaBorderStrongBrush" Color="{StaticResource ArmoniaBorderStrongColor}" />
+
+    <SolidColorBrush x:Key="ArmoniaAccentPrimaryBrush" Color="{StaticResource ArmoniaAccentPrimaryColor}" />
+    <SolidColorBrush x:Key="ArmoniaAccentHoverBrush" Color="{StaticResource ArmoniaAccentHoverColor}" />
+    <SolidColorBrush x:Key="ArmoniaSuccessBrush" Color="{StaticResource ArmoniaSuccessColor}" />
+    <SolidColorBrush x:Key="ArmoniaWarningBrush" Color="{StaticResource ArmoniaWarningColor}" />
+    <SolidColorBrush x:Key="ArmoniaDangerBrush" Color="{StaticResource ArmoniaDangerColor}" />
+
+    <SolidColorBrush x:Key="ArmoniaTextPrimaryBrush" Color="{StaticResource ArmoniaTextPrimaryColor}" />
+    <SolidColorBrush x:Key="ArmoniaTextSecondaryBrush" Color="{StaticResource ArmoniaTextSecondaryColor}" />
+    <SolidColorBrush x:Key="ArmoniaTextMutedBrush" Color="{StaticResource ArmoniaTextMutedColor}" />
+
+    <!-- Corner Radii -->
+    <CornerRadius x:Key="ArmoniaRadiusSmall">4</CornerRadius>
+    <CornerRadius x:Key="ArmoniaRadiusMedium">8</CornerRadius>
+    <CornerRadius x:Key="ArmoniaRadiusLarge">12</CornerRadius>
+    <CornerRadius x:Key="ArmoniaRadiusFull">9999</CornerRadius>
+
+    <!-- Spacings -->
+    <Thickness x:Key="ArmoniaSpacingXs">4</Thickness>
+    <Thickness x:Key="ArmoniaSpacingSm">8</Thickness>
+    <Thickness x:Key="ArmoniaSpacingMd">16</Thickness>
+    <Thickness x:Key="ArmoniaSpacingLg">24</Thickness>
+    <Thickness x:Key="ArmoniaSpacingXl">32</Thickness>
+
+</ResourceDictionary>

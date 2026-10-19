@@ -3,8 +3,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
+using OpenHarness.Application.Common.Interfaces;
 using OpenHarness.Infrastructure.Persistence;
 using OpenHarness.Infrastructure.Persistence.Interceptors;
+using OpenHarness.Infrastructure.Security;
 
 namespace OpenHarness.Infrastructure;
 
@@ -20,6 +22,8 @@ public static class DependencyInjection
 
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<AuditableEntityInterceptor>();
+        services.TryAddSingleton<IJwtTokenProvider, JwtTokenProvider>();
+        services.TryAddSingleton<IApprovalGate, InMemoryApprovalGate>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
         dataSourceBuilder.EnableDynamicJson();
@@ -40,6 +44,8 @@ public static class DependencyInjection
                 .UseSnakeCaseNamingConvention()
                 .AddInterceptors(sp.GetRequiredService<AuditableEntityInterceptor>());
         });
+
+        services.AddScoped<IOpenHarnessDbContext>(sp => sp.GetRequiredService<OpenHarnessDbContext>());
 
         return services;
     }
