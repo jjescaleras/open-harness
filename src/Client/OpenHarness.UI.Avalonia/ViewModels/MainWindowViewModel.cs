@@ -15,6 +15,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public ObservableCollection<DashboardKpiViewModel> Kpis { get; } = [];
     public ObservableCollection<SessionItemViewModel> RecentSessions { get; } = [];
+    public ObservableCollection<NavigationItemViewModel> MenuItems { get; } = [];
 
     [ObservableProperty]
     private string _userEmail = "developer@openharness.internal";
@@ -22,9 +23,34 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isSampleData = true;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDashboardSelected))]
+    private NavigationItemViewModel? _selectedMenuItem;
+
+    /// <summary>Right-hand menu panel; visible by default and collapsible.</summary>
+    [ObservableProperty]
+    private bool _isMenuPanelVisible = true;
+
+    /// <summary>Left-hand multi-purpose panel; hidden by default.</summary>
+    [ObservableProperty]
+    private bool _isAuxPanelVisible;
+
+    [ObservableProperty]
+    private string _auxPanelTitle = "Panel";
+
+    /// <summary>
+    /// Content hosted by the multi-purpose panel, resolved to a view through <c>ViewLocator</c>.
+    /// When null the panel shows a placeholder.
+    /// </summary>
+    [ObservableProperty]
+    private ViewModelBase? _auxPanelContent;
+
+    public bool IsDashboardSelected => SelectedMenuItem?.Target == NavigationTarget.Dashboard;
+
     public MainWindowViewModel(IChatWindowService? chatWindowService = null)
     {
         _chatWindowService = chatWindowService;
+        LoadMenu();
         LoadSampleData();
     }
 
@@ -32,6 +58,43 @@ public partial class MainWindowViewModel : ViewModelBase
     public void OpenChat()
     {
         _chatWindowService?.OpenChat();
+    }
+
+    [RelayCommand]
+    public void Navigate(NavigationItemViewModel? item)
+    {
+        if (item is null) return;
+
+        // Chat lives in its own window; the dashboard keeps its current selection.
+        if (item.Target == NavigationTarget.Chat)
+        {
+            OpenChat();
+            return;
+        }
+
+        SelectedMenuItem = item;
+    }
+
+    [RelayCommand]
+    public void ToggleMenuPanel() => IsMenuPanelVisible = !IsMenuPanelVisible;
+
+    [RelayCommand]
+    public void ToggleAuxPanel() => IsAuxPanelVisible = !IsAuxPanelVisible;
+
+    partial void OnSelectedMenuItemChanged(NavigationItemViewModel? oldValue, NavigationItemViewModel? newValue)
+    {
+        if (oldValue is not null) oldValue.IsSelected = false;
+        if (newValue is not null) newValue.IsSelected = true;
+    }
+
+    private void LoadMenu()
+    {
+        MenuItems.Add(new NavigationItemViewModel { Target = NavigationTarget.Dashboard, Title = "Dashboard", Icon = "📊" });
+        MenuItems.Add(new NavigationItemViewModel { Target = NavigationTarget.Chat, Title = "Chat", Icon = "💬" });
+        MenuItems.Add(new NavigationItemViewModel { Target = NavigationTarget.Sessions, Title = "Sessions", Icon = "🗂", IsAvailable = false });
+        MenuItems.Add(new NavigationItemViewModel { Target = NavigationTarget.Settings, Title = "Settings", Icon = "⚙", IsAvailable = false });
+
+        SelectedMenuItem = MenuItems[0];
     }
 
     private void LoadSampleData()

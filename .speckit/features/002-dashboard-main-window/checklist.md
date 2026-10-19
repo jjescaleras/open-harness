@@ -16,7 +16,13 @@
 - [x] Pulsaciones repetidas activan la ventana de chat existente en vez de duplicarla.
 - [x] Al cerrar el chat, una nueva pulsación abre una ventana nueva.
 
-## 4. Calidad
+## 4. Paneles Laterales
+- [x] El panel de menús (derecha) está visible al iniciar y se oculta/muestra con `☰` o `Ctrl+B`.
+- [x] El panel multiusos (izquierda) está oculto al iniciar y se muestra/oculta con `◧` o `Ctrl+J`.
+- [x] La opción seleccionada del menú se resalta y su nombre aparece en el encabezado.
+- [x] `Chat` abre `MainChatWindow`; `Sessions` y `Settings` muestran "Soon" y una pantalla provisional.
+
+## 5. Calidad
 - [x] `dotnet build OpenHarness.slnx -c Release` compila sin advertencias.
 - [x] Las pruebas de `MainWindowViewModelTests` pasan sin entorno gráfico.
-- [x] Verificación manual bajo Xvfb: el Dashboard se renderiza y el botón abre la ventana de chat.
+- [x] Verificación manual bajo Xvfb: el Dashboard se renderiza, los paneles se alternan con sus atajos, el menú navega y el botón abre la ventana de chat.

@@ -28,6 +28,9 @@ En esta entrega el Dashboard muestra **datos de ejemplo**; la conexión con la A
 - **FR-013**: El Dashboard debe mostrar una fila de tarjetas KPI (`DashboardKpiViewModel`: título, valor, leyenda y tipo `KpiKind` con color de acento alineado con los tokens Armonia) y una lista de sesiones recientes (`SessionItemViewModel`), alimentadas con datos de ejemplo e indicando visiblemente que son datos de ejemplo (`IsSampleData`).
 - **FR-014**: El comando `OpenChatCommand` de `MainWindowViewModel` debe abrir `MainChatWindow` como **ventana independiente** a través de la abstracción `IChatWindowService`, sin referenciar tipos de ventana desde el ViewModel. Si el chat ya está abierto, se activa en lugar de crear un duplicado. El botón admite el atajo `Ctrl+K`.
 
+- **FR-015**: El Dashboard debe incluir un **panel de menús a la derecha**, visible por defecto y ocultable (botón `☰` o `Ctrl+B`), con las opciones `Dashboard`, `Chat`, `Sessions` y `Settings` (`NavigationItemViewModel`). `Dashboard` aparece seleccionada al iniciar; `Chat` abre `MainChatWindow` sin cambiar la selección; `Sessions` y `Settings` se marcan como "Soon" y muestran una pantalla provisional.
+- **FR-016**: El Dashboard debe incluir un **panel multiusos a la izquierda**, **oculto por defecto**, que se muestra u oculta con el botón `◧` o `Ctrl+J` (y se cierra con `✕`). Su contenido es intercambiable mediante `AuxPanelContent` (resuelto a vista por `ViewLocator`) y muestra un texto provisional cuando está vacío.
+
 ---
 
 ## 4. Criterios de Éxito Medibles (Success Criteria)
@@ -35,6 +38,8 @@ En esta entrega el Dashboard muestra **datos de ejemplo**; la conexión con la A
 - **SC-007**: Al iniciar la aplicación se muestra el Dashboard (`MainWindow`) y no el chat.
 - **SC-008**: Pulsar "Open Chat" (o `Ctrl+K`) abre exactamente una instancia de `MainChatWindow`; pulsaciones repetidas no crean ventanas adicionales.
 - **SC-009**: `dotnet build -c Release` compila sin advertencias y las pruebas de `MainWindowViewModel` pasan sin necesidad de un entorno gráfico (servicio de ventanas sustituible por un doble de prueba).
+
+- **SC-010**: Al iniciar, el panel de menús está visible y el panel multiusos oculto; cada atajo (`Ctrl+B`, `Ctrl+J`) alterna su panel sin afectar al otro, y el contenido central se reacomoda al ancho disponible.
 
 ---
 
@@ -51,3 +56,7 @@ En esta entrega el Dashboard muestra **datos de ejemplo**; la conexión con la A
 ### EC-009: ViewModel sin Servicio de Ventanas
 - **Escenario**: `MainWindowViewModel` se instancia sin `IChatWindowService` (diseñador XAML o pruebas).
 - **Manejo**: `OpenChatCommand` no hace nada y no lanza excepciones.
+
+### EC-010: Opción de Menú sin Pantalla
+- **Escenario**: El usuario selecciona `Sessions` o `Settings`, que aún no tienen pantalla.
+- **Manejo**: La opción queda seleccionada, el encabezado muestra su nombre y el área central muestra el aviso "Coming soon" en lugar del Dashboard.

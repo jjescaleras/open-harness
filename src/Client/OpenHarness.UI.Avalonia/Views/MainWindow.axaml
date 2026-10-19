@@ -16,17 +16,62 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
+    <Window.Styles>
+        <Style Selector="ToggleButton.panel-toggle, Button.panel-close">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource ArmoniaTextSecondaryBrush}" />
+            <Setter Property="CornerRadius" Value="{StaticResource ArmoniaRadiusMedium}" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="FontSize" Value="{StaticResource ArmoniaFontSizeLg}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="ToggleButton.panel-toggle:checked /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource ArmoniaBgElevatedBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource ArmoniaAccentPrimaryBrush}" />
+        </Style>
+        <Style Selector="Button.panel-close">
+            <Setter Property="FontSize" Value="{StaticResource ArmoniaFontSizeXs}" />
+        </Style>
+
+        <Style Selector="Button.menu-item">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource ArmoniaTextSecondaryBrush}" />
+            <Setter Property="CornerRadius" Value="{StaticResource ArmoniaRadiusMedium}" />
+            <Setter Property="Padding" Value="10,8" />
+        </Style>
+        <Style Selector="Button.menu-item:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource ArmoniaBgElevatedBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource ArmoniaTextPrimaryBrush}" />
+        </Style>
+        <Style Selector="Button.menu-item.selected">
+            <Setter Property="Background" Value="{StaticResource ArmoniaBgElevatedBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource ArmoniaAccentPrimaryBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+    </Window.Styles>
+
     <Grid RowDefinitions="Auto, *">
         <!-- ============================================== -->
-        <!-- HEADER: BRAND, USER & PRIMARY ACTION           -->
+        <!-- HEADER: PANEL TOGGLES, BRAND & PRIMARY ACTION  -->
         <!-- ============================================== -->
         <Border Grid.Row="0"
                 Background="{StaticResource ArmoniaBgSecondaryBrush}"
                 BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
                 BorderThickness="0,0,0,1"
-                Padding="24,16">
-            <Grid ColumnDefinitions="*, Auto">
-                <StackPanel Grid.Column="0" Spacing="4">
+                Padding="16,12">
+            <Grid ColumnDefinitions="Auto, *, Auto, Auto">
+                <ToggleButton Grid.Column="0"
+                              IsChecked="{Binding IsAuxPanelVisible}"
+                              HotKey="Ctrl+J"
+                              ToolTip.Tip="Toggle side panel (Ctrl+J)"
+                              Classes="panel-toggle"
+                              Margin="0,0,12,0">
+                    <TextBlock Text="◧" />
+                </ToggleButton>
+
+                <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock Text="⚡" FontSize="18" Foreground="{StaticResource ArmoniaAccentPrimaryBrush}" VerticalAlignment="Center" />
                         <TextBlock Text="OPEN HARNESS"
@@ -34,7 +79,7 @@
                                    FontSize="{StaticResource ArmoniaFontSizeLg}"
                                    Foreground="{StaticResource ArmoniaTextPrimaryBrush}"
                                    VerticalAlignment="Center" />
-                        <TextBlock Text="/ Dashboard"
+                        <TextBlock Text="{Binding SelectedMenuItem.Title, StringFormat='/ {0}'}"
                                    FontSize="{StaticResource ArmoniaFontSizeLg}"
                                    Foreground="{StaticResource ArmoniaTextMutedBrush}"
                                    VerticalAlignment="Center" />
@@ -44,7 +89,7 @@
                                Foreground="{StaticResource ArmoniaTextMutedBrush}" />
                 </StackPanel>
 
-                <Button Grid.Column="1"
+                <Button Grid.Column="2"
                         Command="{Binding OpenChatCommand}"
                         HotKey="Ctrl+K"
                         ToolTip.Tip="Open the agentic chat workspace (Ctrl+K)"
@@ -59,112 +104,223 @@
                         <TextBlock Text="Open Chat" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
+
+                <ToggleButton Grid.Column="3"
+                              IsChecked="{Binding IsMenuPanelVisible}"
+                              HotKey="Ctrl+B"
+                              ToolTip.Tip="Toggle menu (Ctrl+B)"
+                              Classes="panel-toggle"
+                              Margin="12,0,0,0">
+                    <TextBlock Text="☰" />
+                </ToggleButton>
             </Grid>
         </Border>
 
-        <!-- ============================================== -->
-        <!-- BODY: KPI CARDS & RECENT SESSIONS              -->
-        <!-- ============================================== -->
-        <ScrollViewer Grid.Row="1" Padding="24">
-            <StackPanel Spacing="24">
-                <!-- Sample data notice -->
-                <Border IsVisible="{Binding IsSampleData}"
-                        Background="{StaticResource ArmoniaBgElevatedBrush}"
-                        BorderBrush="{StaticResource ArmoniaWarningBrush}"
-                        BorderThickness="1"
-                        CornerRadius="{StaticResource ArmoniaRadiusMedium}"
-                        Padding="12,8">
-                    <TextBlock Text="Showing sample data — the dashboard is not connected to the API yet."
-                               FontSize="{StaticResource ArmoniaFontSizeXs}"
-                               Foreground="{StaticResource ArmoniaWarningBrush}" />
-                </Border>
-
-                <!-- KPI cards -->
-                <ItemsControl ItemsSource="{Binding Kpis}" Margin="0,0,-12,0">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <UniformGrid Columns="4" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="vm:DashboardKpiViewModel">
-                            <Border Background="{StaticResource ArmoniaBgSecondaryBrush}"
-                                    BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="{StaticResource ArmoniaRadiusLarge}"
-                                    Padding="16"
-                                    Margin="0,0,12,0">
-                                <Grid ColumnDefinitions="4, *">
-                                    <Border Grid.Column="0"
-                                            Background="{Binding AccentColor}"
-                                            CornerRadius="{StaticResource ArmoniaRadiusFull}" />
-                                    <StackPanel Grid.Column="1" Spacing="4" Margin="12,0,0,0">
-                                        <TextBlock Text="{Binding Title}"
-                                                   FontSize="{StaticResource ArmoniaFontSizeXs}"
-                                                   Foreground="{StaticResource ArmoniaTextSecondaryBrush}" />
-                                        <TextBlock Text="{Binding Value}"
-                                                   FontWeight="Bold"
-                                                   FontSize="{StaticResource ArmoniaFontSizeXxl}"
-                                                   Foreground="{StaticResource ArmoniaTextPrimaryBrush}" />
-                                        <TextBlock Text="{Binding Caption}"
-                                                   FontSize="{StaticResource ArmoniaFontSizeXs}"
-                                                   Foreground="{StaticResource ArmoniaTextMutedBrush}"
-                                                   TextTrimming="CharacterEllipsis" />
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-                <!-- Recent sessions -->
-                <Border Background="{StaticResource ArmoniaBgSecondaryBrush}"
-                        BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
-                        BorderThickness="1"
-                        CornerRadius="{StaticResource ArmoniaRadiusLarge}"
-                        Padding="16">
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="RECENT SESSIONS"
+        <Grid Grid.Row="1" ColumnDefinitions="Auto, *, Auto">
+            <!-- ============================================== -->
+            <!-- LEFT: MULTI-PURPOSE PANEL (HIDDEN BY DEFAULT)  -->
+            <!-- ============================================== -->
+            <Border Grid.Column="0"
+                    Width="300"
+                    IsVisible="{Binding IsAuxPanelVisible}"
+                    Background="{StaticResource ArmoniaBgSecondaryBrush}"
+                    BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
+                    BorderThickness="0,0,1,0">
+                <Grid RowDefinitions="Auto, *">
+                    <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="16,12">
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding AuxPanelTitle}"
                                    FontWeight="SemiBold"
+                                   FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                   Foreground="{StaticResource ArmoniaTextPrimaryBrush}"
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="1"
+                                Command="{Binding ToggleAuxPanelCommand}"
+                                ToolTip.Tip="Hide panel"
+                                Classes="panel-close">
+                            <TextBlock Text="✕" />
+                        </Button>
+                    </Grid>
+                    <Panel Grid.Row="1" Margin="16,0,16,16">
+                        <ContentControl Content="{Binding AuxPanelContent}" />
+                        <TextBlock IsVisible="{Binding AuxPanelContent, Converter={x:Static ObjectConverters.IsNull}}"
+                                   Text="This panel can host filters, details, notifications or any other contextual tool."
+                                   TextWrapping="Wrap"
                                    FontSize="{StaticResource ArmoniaFontSizeXs}"
-                                   Foreground="{StaticResource ArmoniaTextSecondaryBrush}" />
-                        <ItemsControl ItemsSource="{Binding RecentSessions}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="vm:SessionItemViewModel">
-                                    <Border Background="{StaticResource ArmoniaBgElevatedBrush}"
-                                            CornerRadius="{StaticResource ArmoniaRadiusMedium}"
-                                            Padding="12,10"
-                                            Margin="0,0,0,8">
-                                        <Grid ColumnDefinitions="*, Auto, Auto">
-                                            <TextBlock Grid.Column="0"
-                                                       Text="{Binding Title}"
-                                                       FontWeight="SemiBold"
-                                                       FontSize="{StaticResource ArmoniaFontSizeSm}"
-                                                       Foreground="{StaticResource ArmoniaTextPrimaryBrush}"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="1"
-                                                       Text="{Binding UpdatedAt, StringFormat='{}{0:MM/dd HH:mm}'}"
+                                   Foreground="{StaticResource ArmoniaTextMutedBrush}" />
+                    </Panel>
+                </Grid>
+            </Border>
+
+            <!-- ============================================== -->
+            <!-- CENTER: SELECTED PAGE                          -->
+            <!-- ============================================== -->
+            <ScrollViewer Grid.Column="1" Padding="24" IsVisible="{Binding IsDashboardSelected}">
+
+                <StackPanel Spacing="24">
+                    <!-- Sample data notice -->
+                    <Border IsVisible="{Binding IsSampleData}"
+                            Background="{StaticResource ArmoniaBgElevatedBrush}"
+                            BorderBrush="{StaticResource ArmoniaWarningBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource ArmoniaRadiusMedium}"
+                            Padding="12,8">
+                        <TextBlock Text="Showing sample data — the dashboard is not connected to the API yet."
+                                   FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                   Foreground="{StaticResource ArmoniaWarningBrush}" />
+                    </Border>
+
+                    <!-- KPI cards -->
+                    <ItemsControl ItemsSource="{Binding Kpis}" Margin="0,0,-12,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:DashboardKpiViewModel">
+                                <Border Background="{StaticResource ArmoniaBgSecondaryBrush}"
+                                        BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource ArmoniaRadiusLarge}"
+                                        Padding="16"
+                                        Margin="0,0,12,0">
+                                    <Grid ColumnDefinitions="4, *">
+                                        <Border Grid.Column="0"
+                                                Background="{Binding AccentColor}"
+                                                CornerRadius="{StaticResource ArmoniaRadiusFull}" />
+                                        <StackPanel Grid.Column="1" Spacing="4" Margin="12,0,0,0">
+                                            <TextBlock Text="{Binding Title}"
+                                                       FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                                       Foreground="{StaticResource ArmoniaTextSecondaryBrush}" />
+                                            <TextBlock Text="{Binding Value}"
+                                                       FontWeight="Bold"
+                                                       FontSize="{StaticResource ArmoniaFontSizeXxl}"
+                                                       Foreground="{StaticResource ArmoniaTextPrimaryBrush}" />
+                                            <TextBlock Text="{Binding Caption}"
                                                        FontSize="{StaticResource ArmoniaFontSizeXs}"
                                                        Foreground="{StaticResource ArmoniaTextMutedBrush}"
-                                                       Margin="12,0"
-                                                       VerticalAlignment="Center" />
-                                            <Border Grid.Column="2"
-                                                    Background="{StaticResource ArmoniaBgSecondaryBrush}"
-                                                    CornerRadius="{StaticResource ArmoniaRadiusSmall}"
-                                                    Padding="6,2">
-                                                <TextBlock Text="{Binding Status}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Recent sessions -->
+                    <Border Background="{StaticResource ArmoniaBgSecondaryBrush}"
+                            BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource ArmoniaRadiusLarge}"
+                            Padding="16">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="RECENT SESSIONS"
+                                       FontWeight="SemiBold"
+                                       FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                       Foreground="{StaticResource ArmoniaTextSecondaryBrush}" />
+                            <ItemsControl ItemsSource="{Binding RecentSessions}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="vm:SessionItemViewModel">
+                                        <Border Background="{StaticResource ArmoniaBgElevatedBrush}"
+                                                CornerRadius="{StaticResource ArmoniaRadiusMedium}"
+                                                Padding="12,10"
+                                                Margin="0,0,0,8">
+                                            <Grid ColumnDefinitions="*, Auto, Auto">
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding Title}"
+                                                           FontWeight="SemiBold"
+                                                           FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                                           Foreground="{StaticResource ArmoniaTextPrimaryBrush}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding UpdatedAt, StringFormat='{}{0:MM/dd HH:mm}'}"
                                                            FontSize="{StaticResource ArmoniaFontSizeXs}"
-                                                           Foreground="{Binding StatusBadgeColor}" />
-                                            </Border>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
+                                                           Foreground="{StaticResource ArmoniaTextMutedBrush}"
+                                                           Margin="12,0"
+                                                           VerticalAlignment="Center" />
+                                                <Border Grid.Column="2"
+                                                        Background="{StaticResource ArmoniaBgSecondaryBrush}"
+                                                        CornerRadius="{StaticResource ArmoniaRadiusSmall}"
+                                                        Padding="6,2">
+                                                    <TextBlock Text="{Binding Status}"
+                                                               FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                                               Foreground="{Binding StatusBadgeColor}" />
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Placeholder for menu entries without a screen yet -->
+            <StackPanel Grid.Column="1"
+                        IsVisible="{Binding !IsDashboardSelected}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="8">
+                <TextBlock Text="{Binding SelectedMenuItem.Title}"
+                           HorizontalAlignment="Center"
+                           FontWeight="Bold"
+                           FontSize="{StaticResource ArmoniaFontSizeXl}"
+                           Foreground="{StaticResource ArmoniaTextPrimaryBrush}" />
+                <TextBlock Text="Coming soon — this screen is not built yet."
+                           HorizontalAlignment="Center"
+                           FontSize="{StaticResource ArmoniaFontSizeSm}"
+                           Foreground="{StaticResource ArmoniaTextMutedBrush}" />
             </StackPanel>
-        </ScrollViewer>
+
+            <!-- ============================================== -->
+            <!-- RIGHT: MENU PANEL (COLLAPSIBLE)                -->
+            <!-- ============================================== -->
+            <Border Grid.Column="2"
+                    Width="220"
+                    IsVisible="{Binding IsMenuPanelVisible}"
+                    Background="{StaticResource ArmoniaBgSecondaryBrush}"
+                    BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
+                    BorderThickness="1,0,0,0"
+                    Padding="12,16">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="MENU"
+                               FontWeight="SemiBold"
+                               FontSize="{StaticResource ArmoniaFontSizeXs}"
+                               Foreground="{StaticResource ArmoniaTextSecondaryBrush}"
+                               Margin="4,0,0,4" />
+                    <ItemsControl ItemsSource="{Binding MenuItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:NavigationItemViewModel">
+                                <Button Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NavigateCommand}"
+                                        CommandParameter="{Binding}"
+                                        Classes="menu-item"
+                                        Classes.selected="{Binding IsSelected}"
+                                        Margin="0,0,0,4">
+                                    <Grid ColumnDefinitions="Auto, *, Auto">
+                                        <TextBlock Grid.Column="0" Text="{Binding Icon}" Width="24" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding Title}"
+                                                   FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                                   VerticalAlignment="Center" />
+                                        <Border Grid.Column="2"
+                                                IsVisible="{Binding !IsAvailable}"
+                                                Background="{StaticResource ArmoniaBgElevatedBrush}"
+                                                CornerRadius="{StaticResource ArmoniaRadiusSmall}"
+                                                Padding="6,1">
+                                            <TextBlock Text="Soon"
+                                                       FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                                       Foreground="{StaticResource ArmoniaTextMutedBrush}" />
+                                        </Border>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

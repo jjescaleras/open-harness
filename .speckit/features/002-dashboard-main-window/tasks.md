@@ -29,3 +29,15 @@
   - **Archivos Objetivo**: `tests/OpenHarness.UnitTests/UI/MainWindowViewModelTests.cs`
   - **Trazabilidad**: `FR-013`, `FR-014`, `SC-009`, `EC-009`
   - **Criterio de Aceptación**: Pruebas de carga de datos de ejemplo, delegación de `OpenChatCommand`, ausencia de servicio y colores de acento por `KpiKind`.
+
+- [x] **T6.6: Panel de Menús Ocultable (Derecha)**
+  - **Dependencias**: `T6.4`
+  - **Archivos Objetivo**: `src/Client/OpenHarness.UI.Avalonia/ViewModels/NavigationItemViewModel.cs`, `src/Client/OpenHarness.UI.Avalonia/ViewModels/MainWindowViewModel.cs`, `src/Client/OpenHarness.UI.Avalonia/Views/MainWindow.axaml`
+  - **Trazabilidad**: `FR-015`, `SC-010`, `EC-010`
+  - **Criterio de Aceptación**: Menú visible por defecto con Dashboard, Chat, Sessions y Settings; se oculta con `☰`/`Ctrl+B`; Chat abre `MainChatWindow`.
+
+- [x] **T6.7: Panel Multiusos Oculto por Defecto (Izquierda)**
+  - **Dependencias**: `T6.4`
+  - **Archivos Objetivo**: `src/Client/OpenHarness.UI.Avalonia/ViewModels/MainWindowViewModel.cs`, `src/Client/OpenHarness.UI.Avalonia/Views/MainWindow.axaml`
+  - **Trazabilidad**: `FR-016`, `SC-010`
+  - **Criterio de Aceptación**: Panel oculto al iniciar; se muestra/oculta con `◧`/`Ctrl+J` y se cierra con `✕`; contenido intercambiable vía `AuxPanelContent`.
