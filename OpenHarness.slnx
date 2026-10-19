@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Backend/">
+    <Project Path="src/Backend/OpenHarness.Domain/OpenHarness.Domain.csproj" />
+    <Project Path="src/Backend/OpenHarness.Application/OpenHarness.Application.csproj" />
+    <Project Path="src/Backend/OpenHarness.Infrastructure/OpenHarness.Infrastructure.csproj" />
+    <Project Path="src/Backend/OpenHarness.Api/OpenHarness.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Client/">
+    <Project Path="src/Client/OpenHarness.Client.Core/OpenHarness.Client.Core.csproj" />
+    <Project Path="src/Client/OpenHarness.UI.Avalonia/OpenHarness.UI.Avalonia.csproj" />
+  </Folder>
+</Solution>

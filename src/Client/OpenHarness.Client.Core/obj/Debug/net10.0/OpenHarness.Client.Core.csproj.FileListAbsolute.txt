@@ -1,0 +1,11 @@
+/home/mrbyte01/Projects/open-harness/src/Client/OpenHarness.Client.Core/bin/Debug/net10.0/OpenHarness.Client.Core.deps.json
+/home/mrbyte01/Projects/open-harness/src/Client/OpenHarness.Client.Core/bin/Debug/net10.0/OpenHarness.Client.Core.dll
+/home/mrbyte01/Projects/open-harness/src/Client/OpenHarness.Client.Core/bin/Debug/net10.0/OpenHarness.Client.Core.pdb
+/home/mrbyte01/Projects/open-harness/src/Client/OpenHarness.Client.Core/obj/Debug/net10.0/OpenHarness.Client.Core.GeneratedMSBuildEditorConfig.editorconfig
+/home/mrbyte01/Projects/open-harness/src/Client/OpenHarness.Client.Core/obj/Debug/net10.0/OpenHarness.Client.Core.AssemblyInfoInputs.cache
+/home/mrbyte01/Projects/open-harness/src/Client/OpenHarness.Client.Core/obj/Debug/net10.0/OpenHarness.Client.Core.AssemblyInfo.cs
+/home/mrbyte01/Projects/open-harness/src/Client/OpenHarness.Client.Core/obj/Debug/net10.0/OpenHarness.Client.Core.csproj.CoreCompileInputs.cache
+/home/mrbyte01/Projects/open-harness/src/Client/OpenHarness.Client.Core/obj/Debug/net10.0/OpenHarness.Client.Core.dll
+/home/mrbyte01/Projects/open-harness/src/Client/OpenHarness.Client.Core/obj/Debug/net10.0/refint/OpenHarness.Client.Core.dll
+/home/mrbyte01/Projects/open-harness/src/Client/OpenHarness.Client.Core/obj/Debug/net10.0/OpenHarness.Client.Core.pdb
+/home/mrbyte01/Projects/open-harness/src/Client/OpenHarness.Client.Core/obj/Debug/net10.0/ref/OpenHarness.Client.Core.dll

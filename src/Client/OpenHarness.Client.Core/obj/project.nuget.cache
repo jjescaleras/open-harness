@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "qBv7zZ9OzRI=",
+  "success": true,
+  "projectFilePath": "/home/mrbyte01/Projects/open-harness/src/Client/OpenHarness.Client.Core/OpenHarness.Client.Core.csproj",
+  "expectedPackageFiles": [
+    "/home/mrbyte01/.nuget/packages/microsoft.aspnetcore.app.ref/10.0.13/microsoft.aspnetcore.app.ref.10.0.13.nupkg.sha512"
+  ],
+  "logs": []
+}

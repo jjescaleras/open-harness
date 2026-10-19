@@ -1,0 +1,15 @@
+/home/mrbyte01/Projects/open-harness/src/Backend/OpenHarness.Application/bin/Debug/net10.0/OpenHarness.Application.deps.json
+/home/mrbyte01/Projects/open-harness/src/Backend/OpenHarness.Application/bin/Debug/net10.0/OpenHarness.Application.dll
+/home/mrbyte01/Projects/open-harness/src/Backend/OpenHarness.Application/bin/Debug/net10.0/OpenHarness.Application.pdb
+/home/mrbyte01/Projects/open-harness/src/Backend/OpenHarness.Application/bin/Debug/net10.0/OpenHarness.Domain.dll
+/home/mrbyte01/Projects/open-harness/src/Backend/OpenHarness.Application/bin/Debug/net10.0/OpenHarness.Domain.pdb
+/home/mrbyte01/Projects/open-harness/src/Backend/OpenHarness.Application/obj/Debug/net10.0/OpenHarness.Application.csproj.AssemblyReference.cache
+/home/mrbyte01/Projects/open-harness/src/Backend/OpenHarness.Application/obj/Debug/net10.0/OpenHarness.Application.GeneratedMSBuildEditorConfig.editorconfig
+/home/mrbyte01/Projects/open-harness/src/Backend/OpenHarness.Application/obj/Debug/net10.0/OpenHarness.Application.AssemblyInfoInputs.cache
+/home/mrbyte01/Projects/open-harness/src/Backend/OpenHarness.Application/obj/Debug/net10.0/OpenHarness.Application.AssemblyInfo.cs
+/home/mrbyte01/Projects/open-harness/src/Backend/OpenHarness.Application/obj/Debug/net10.0/OpenHarness.Application.csproj.CoreCompileInputs.cache
+/home/mrbyte01/Projects/open-harness/src/Backend/OpenHarness.Application/obj/Debug/net10.0/OpenHarn.929C06C3.Up2Date
+/home/mrbyte01/Projects/open-harness/src/Backend/OpenHarness.Application/obj/Debug/net10.0/OpenHarness.Application.dll
+/home/mrbyte01/Projects/open-harness/src/Backend/OpenHarness.Application/obj/Debug/net10.0/refint/OpenHarness.Application.dll
+/home/mrbyte01/Projects/open-harness/src/Backend/OpenHarness.Application/obj/Debug/net10.0/OpenHarness.Application.pdb
+/home/mrbyte01/Projects/open-harness/src/Backend/OpenHarness.Application/obj/Debug/net10.0/ref/OpenHarness.Application.dll
