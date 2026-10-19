@@ -2,8 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="OpenHarness.UI.Avalonia.App"
              xmlns:local="using:OpenHarness.UI.Avalonia"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             RequestedThemeVariant="Dark">
+             <!-- ArmoniaDesignTokens is a dark palette, so Fluent controls must use the Dark variant to match it. -->
 
     <Application.DataTemplates>
         <local:ViewLocator />

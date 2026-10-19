@@ -1,6 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using OpenHarness.Client.Core.Authentication;
+using OpenHarness.Client.Core.Http;
+using OpenHarness.UI.Avalonia.Localization;
 using OpenHarness.UI.Avalonia.Services;
 
 namespace OpenHarness.UI.Avalonia.ViewModels;
@@ -12,6 +15,8 @@ namespace OpenHarness.UI.Avalonia.ViewModels;
 public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IChatWindowService? _chatWindowService;
+    private readonly ISettingsApiClient? _settingsApiClient;
+    private SettingsGeneralViewModel? _settingsGeneral;
 
     public ObservableCollection<DashboardKpiViewModel> Kpis { get; } = [];
     public ObservableCollection<SessionItemViewModel> RecentSessions { get; } = [];
@@ -25,7 +30,12 @@ public partial class MainWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDashboardSelected))]
+    [NotifyPropertyChangedFor(nameof(Breadcrumb))]
     private NavigationItemViewModel? _selectedMenuItem;
+
+    /// <summary>Page shown in the center when the dashboard is not selected; resolved to a view by <c>ViewLocator</c>.</summary>
+    [ObservableProperty]
+    private ViewModelBase? _currentPage;
 
     /// <summary>Left-hand menu panel; visible by default and collapsible.</summary>
     [ObservableProperty]
@@ -36,7 +46,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private bool _isAuxPanelVisible;
 
     [ObservableProperty]
-    private string _auxPanelTitle = "Panel";
+    private string _auxPanelTitle = Localizer.Instance["Shell_AuxPanel_Title"];
 
     /// <summary>
     /// Content hosted by the multi-purpose panel, resolved to a view through <c>ViewLocator</c>.
@@ -47,11 +57,28 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public bool IsDashboardSelected => SelectedMenuItem?.Target == NavigationTarget.Dashboard;
 
-    public MainWindowViewModel(IChatWindowService? chatWindowService = null)
+    /// <summary>Settings are global and only administrators may see or change them.</summary>
+    public bool IsAdmin { get; }
+
+    /// <summary>"Configuración / General" style path of the selected entry, shown in the header.</summary>
+    public string Breadcrumb => SelectedMenuItem is null
+        ? string.Empty
+        : SelectedMenuItem.Parent is { } parent
+            ? $"{parent.Title} / {SelectedMenuItem.Title}"
+            : SelectedMenuItem.Title;
+
+    public MainWindowViewModel(
+        IChatWindowService? chatWindowService = null,
+        ISettingsApiClient? settingsApiClient = null,
+        string userRole = ClientRoles.Admin)
     {
         _chatWindowService = chatWindowService;
+        _settingsApiClient = settingsApiClient;
+        IsAdmin = string.Equals(userRole, ClientRoles.Admin, StringComparison.OrdinalIgnoreCase);
+
         LoadMenu();
         LoadSampleData();
+        Localizer.Instance.PropertyChanged += (_, _) => OnPropertyChanged(nameof(Breadcrumb));
     }
 
     [RelayCommand]
@@ -72,7 +99,25 @@ public partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
+        // A collapsed group opens its sub-menu and lands on its first entry; an expanded one collapses.
+        if (item.HasChildren)
+        {
+            if (item.IsExpanded)
+            {
+                item.IsExpanded = false;
+                return;
+            }
+
+            item.IsExpanded = true;
+            if (SelectedMenuItem?.Parent != item)
+            {
+                Navigate(item.Children[0]);
+            }
+            return;
+        }
+
         SelectedMenuItem = item;
+        CurrentPage = CreatePage(item);
     }
 
     [RelayCommand]
@@ -83,26 +128,64 @@ public partial class MainWindowViewModel : ViewModelBase
 
     partial void OnSelectedMenuItemChanged(NavigationItemViewModel? oldValue, NavigationItemViewModel? newValue)
     {
-        if (oldValue is not null) oldValue.IsSelected = false;
-        if (newValue is not null) newValue.IsSelected = true;
+        if (oldValue is not null)
+        {
+            oldValue.IsSelected = false;
+            if (oldValue.Parent is { } oldParent) oldParent.IsSelected = false;
+        }
+
+        if (newValue is not null)
+        {
+            newValue.IsSelected = true;
+            if (newValue.Parent is { } newParent) newParent.IsSelected = true;
+        }
+    }
+
+    private ViewModelBase? CreatePage(NavigationItemViewModel item)
+    {
+        switch (item.Target)
+        {
+            case NavigationTarget.Dashboard:
+                return null;
+            case NavigationTarget.SettingsGeneral:
+                // Kept alive so unsaved edits survive navigating to another page and back.
+                if (_settingsGeneral is null)
+                {
+                    _settingsGeneral = new SettingsGeneralViewModel(_settingsApiClient, canEdit: IsAdmin);
+                    _ = _settingsGeneral.ReloadAsync();
+                }
+                return _settingsGeneral;
+            default:
+                return new ComingSoonViewModel(item.TitleKey);
+        }
     }
 
     private void LoadMenu()
     {
-        MenuItems.Add(new NavigationItemViewModel { Target = NavigationTarget.Dashboard, Title = "Dashboard", Icon = "📊" });
-        MenuItems.Add(new NavigationItemViewModel { Target = NavigationTarget.Chat, Title = "Chat", Icon = "💬" });
-        MenuItems.Add(new NavigationItemViewModel { Target = NavigationTarget.Sessions, Title = "Sessions", Icon = "🗂", IsAvailable = false });
-        MenuItems.Add(new NavigationItemViewModel { Target = NavigationTarget.Settings, Title = "Settings", Icon = "⚙", IsAvailable = false });
+        MenuItems.Add(new NavigationItemViewModel { Target = NavigationTarget.Dashboard, TitleKey = "Menu_Dashboard", Icon = "📊" });
+        MenuItems.Add(new NavigationItemViewModel { Target = NavigationTarget.Chat, TitleKey = "Menu_Chat", Icon = "💬" });
+        MenuItems.Add(new NavigationItemViewModel { Target = NavigationTarget.Sessions, TitleKey = "Menu_Sessions", Icon = "🗂", IsAvailable = false });
+
+        if (IsAdmin)
+        {
+            var settings = new NavigationItemViewModel { Target = NavigationTarget.Settings, TitleKey = "Menu_Settings", Icon = "⚙" };
+            settings
+                .AddChild(new NavigationItemViewModel { Target = NavigationTarget.SettingsGeneral, TitleKey = "Menu_Settings_General", Icon = "⚙" })
+                .AddChild(new NavigationItemViewModel { Target = NavigationTarget.SettingsConnections, TitleKey = "Menu_Settings_Connections", Icon = "🔌", IsAvailable = false })
+                .AddChild(new NavigationItemViewModel { Target = NavigationTarget.SettingsModels, TitleKey = "Menu_Settings_Models", Icon = "🧠", IsAvailable = false });
+            MenuItems.Add(settings);
+        }
 
         SelectedMenuItem = MenuItems[0];
     }
 
     private void LoadSampleData()
     {
-        Kpis.Add(new DashboardKpiViewModel { Title = "Active Sessions", Value = "3", Caption = "12 total this week", Kind = KpiKind.Neutral });
-        Kpis.Add(new DashboardKpiViewModel { Title = "Pending Approvals", Value = "2", Caption = "Sandbox requests awaiting review", Kind = KpiKind.Warning });
-        Kpis.Add(new DashboardKpiViewModel { Title = "Tokens Today", Value = "48.2K", Caption = "31.5K input · 16.7K output", Kind = KpiKind.Neutral });
-        Kpis.Add(new DashboardKpiViewModel { Title = "Tool Executions", Value = "127", Caption = "98% completed successfully", Kind = KpiKind.Success });
+        var t = Localizer.Instance;
+        Kpis.Add(new DashboardKpiViewModel { Title = t["Dashboard_Kpi_ActiveSessions"], Value = "3", Caption = t["Dashboard_Kpi_ActiveSessions_Caption"], Kind = KpiKind.Neutral });
+        Kpis.Add(new DashboardKpiViewModel { Title = t["Dashboard_Kpi_PendingApprovals"], Value = "2", Caption = t["Dashboard_Kpi_PendingApprovals_Caption"], Kind = KpiKind.Warning });
+        Kpis.Add(new DashboardKpiViewModel { Title = t["Dashboard_Kpi_TokensToday"], Value = "48.2K", Caption = t["Dashboard_Kpi_TokensToday_Caption"], Kind = KpiKind.Neutral });
+        Kpis.Add(new DashboardKpiViewModel { Title = t["Dashboard_Kpi_ToolExecutions"], Value = "127", Caption = t["Dashboard_Kpi_ToolExecutions_Caption"], Kind = KpiKind.Success });
 
         var now = DateTimeOffset.UtcNow;
         RecentSessions.Add(new SessionItemViewModel { Title = "Refactor auth slices", Status = "Streaming", UpdatedAt = now.AddMinutes(-12) });

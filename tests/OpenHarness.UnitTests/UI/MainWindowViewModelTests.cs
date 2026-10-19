@@ -23,7 +23,7 @@ public class MainWindowViewModelTests
         // Assert
         vm.IsSampleData.Should().BeTrue();
         vm.Kpis.Should().HaveCount(4);
-        vm.Kpis.Select(k => k.Title).Should().Contain(["Active Sessions", "Pending Approvals"]);
+        vm.Kpis.Select(k => k.Title).Should().Contain(["Sesiones activas", "Aprobaciones pendientes"]);
         vm.RecentSessions.Should().NotBeEmpty();
     }
 
@@ -108,7 +108,7 @@ public class MainWindowViewModelTests
     }
 
     [Fact]
-    public void Navigate_ToSettings_SelectsItemAndLeavesDashboard()
+    public void Navigate_ToSettings_ExpandsGroupAndOpensGeneral()
     {
         // Arrange
         var vm = new MainWindowViewModel();
@@ -119,10 +119,80 @@ public class MainWindowViewModelTests
         vm.NavigateCommand.Execute(settings);
 
         // Assert
-        vm.SelectedMenuItem.Should().Be(settings);
+        settings.IsExpanded.Should().BeTrue();
         settings.IsSelected.Should().BeTrue();
+        settings.Children.Select(c => c.Target).Should().Equal(
+            NavigationTarget.SettingsGeneral, NavigationTarget.SettingsConnections, NavigationTarget.SettingsModels);
+        vm.SelectedMenuItem!.Target.Should().Be(NavigationTarget.SettingsGeneral);
+        vm.SelectedMenuItem.IsSelected.Should().BeTrue();
+        vm.CurrentPage.Should().BeOfType<SettingsGeneralViewModel>();
+        vm.Breadcrumb.Should().Be("Configuración / General");
         dashboard.IsSelected.Should().BeFalse();
         vm.IsDashboardSelected.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Navigate_ToExpandedSettings_CollapsesAndKeepsSelection()
+    {
+        // Arrange
+        var vm = new MainWindowViewModel();
+        var settings = vm.MenuItems.Single(m => m.Target == NavigationTarget.Settings);
+        vm.NavigateCommand.Execute(settings);
+
+        // Act
+        vm.NavigateCommand.Execute(settings);
+
+        // Assert
+        settings.IsExpanded.Should().BeFalse();
+        vm.SelectedMenuItem!.Target.Should().Be(NavigationTarget.SettingsGeneral);
+    }
+
+    [Fact]
+    public void Navigate_BetweenSubMenus_ShowsComingSoonAndReusesGeneralPage()
+    {
+        // Arrange
+        var vm = new MainWindowViewModel();
+        var settings = vm.MenuItems.Single(m => m.Target == NavigationTarget.Settings);
+        vm.NavigateCommand.Execute(settings);
+        var general = vm.CurrentPage;
+        var connections = settings.Children.Single(c => c.Target == NavigationTarget.SettingsConnections);
+
+        // Act
+        vm.NavigateCommand.Execute(connections);
+
+        // Assert
+        vm.CurrentPage.Should().BeOfType<ComingSoonViewModel>()
+            .Which.Title.Should().Be("Conexiones");
+        settings.IsSelected.Should().BeTrue();
+        settings.Children[0].IsSelected.Should().BeFalse();
+
+        vm.NavigateCommand.Execute(settings.Children[0]);
+        vm.CurrentPage.Should().BeSameAs(general);
+    }
+
+    [Fact]
+    public void Menu_ForNonAdmin_HidesSettings()
+    {
+        var vm = new MainWindowViewModel(userRole: "user");
+
+        vm.IsAdmin.Should().BeFalse();
+        vm.MenuItems.Should().NotContain(m => m.Target == NavigationTarget.Settings);
+    }
+
+    [Fact]
+    public void Navigate_ToComingSoonEntry_ShowsPlaceholderPage()
+    {
+        // Arrange
+        var vm = new MainWindowViewModel();
+        var sessions = vm.MenuItems.Single(m => m.Target == NavigationTarget.Sessions);
+
+        // Act
+        vm.NavigateCommand.Execute(sessions);
+
+        // Assert
+        vm.SelectedMenuItem.Should().Be(sessions);
+        vm.CurrentPage.Should().BeOfType<ComingSoonViewModel>();
+        vm.Breadcrumb.Should().Be("Sesiones");
     }
 
     [Theory]

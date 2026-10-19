@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:OpenHarness.UI.Avalonia.ViewModels"
+        xmlns:i18n="using:OpenHarness.UI.Avalonia.Localization"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
@@ -9,7 +10,7 @@
         x:Class="OpenHarness.UI.Avalonia.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Open Harness - Dashboard"
+        Title="{i18n:Tr Shell_WindowTitle}"
         Background="{StaticResource ArmoniaBgPrimaryBrush}">
 
     <Design.DataContext>
@@ -45,6 +46,34 @@
             <Setter Property="Background" Value="{StaticResource ArmoniaBgElevatedBrush}" />
             <Setter Property="Foreground" Value="{StaticResource ArmoniaTextPrimaryBrush}" />
         </Style>
+        <Style Selector="Button.submenu-item">
+            <Setter Property="Padding" Value="10,6" />
+        </Style>
+        <Style Selector="Border.submenu">
+            <Setter Property="Background" Value="{StaticResource ArmoniaBgPrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ArmoniaBorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="{StaticResource ArmoniaRadiusMedium}" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="Margin" Value="16,4,0,0" />
+        </Style>
+        <Style Selector="Border.soon-badge">
+            <Setter Property="Background" Value="{StaticResource ArmoniaBgElevatedBrush}" />
+            <Setter Property="CornerRadius" Value="{StaticResource ArmoniaRadiusSmall}" />
+            <Setter Property="Padding" Value="6,1" />
+        </Style>
+        <Style Selector="Border.soon-badge > TextBlock">
+            <Setter Property="FontSize" Value="{StaticResource ArmoniaFontSizeXs}" />
+            <Setter Property="Foreground" Value="{StaticResource ArmoniaTextMutedBrush}" />
+        </Style>
+        <Style Selector="TextBlock.chevron">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{StaticResource ArmoniaTextMutedBrush}" />
+            <Setter Property="RenderTransform" Value="rotate(0deg)" />
+        </Style>
+        <Style Selector="TextBlock.chevron.expanded">
+            <Setter Property="RenderTransform" Value="rotate(90deg)" />
+        </Style>
         <Style Selector="Button.menu-item.selected">
             <Setter Property="Background" Value="{StaticResource ArmoniaBgElevatedBrush}" />
             <Setter Property="Foreground" Value="{StaticResource ArmoniaAccentPrimaryBrush}" />
@@ -65,7 +94,7 @@
                 <ToggleButton Grid.Column="0"
                               IsChecked="{Binding IsMenuPanelVisible}"
                               HotKey="Ctrl+B"
-                              ToolTip.Tip="Toggle menu (Ctrl+B)"
+                              ToolTip.Tip="{i18n:Tr Shell_ToggleMenu_Tooltip}"
                               Classes="panel-toggle"
                               Margin="0,0,12,0">
                     <TextBlock Text="☰" />
@@ -79,7 +108,7 @@
                                    FontSize="{StaticResource ArmoniaFontSizeLg}"
                                    Foreground="{StaticResource ArmoniaTextPrimaryBrush}"
                                    VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding SelectedMenuItem.Title, StringFormat='/ {0}'}"
+                        <TextBlock Text="{Binding Breadcrumb, StringFormat='/ {0}'}"
                                    FontSize="{StaticResource ArmoniaFontSizeLg}"
                                    Foreground="{StaticResource ArmoniaTextMutedBrush}"
                                    VerticalAlignment="Center" />
@@ -92,7 +121,7 @@
                 <Button Grid.Column="2"
                         Command="{Binding OpenChatCommand}"
                         HotKey="Ctrl+K"
-                        ToolTip.Tip="Open the agentic chat workspace (Ctrl+K)"
+                        ToolTip.Tip="{i18n:Tr Shell_OpenChat_Tooltip}"
                         Background="{StaticResource ArmoniaAccentPrimaryBrush}"
                         Foreground="{StaticResource ArmoniaTextPrimaryBrush}"
                         FontWeight="SemiBold"
@@ -101,14 +130,14 @@
                         VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <TextBlock Text="💬" VerticalAlignment="Center" />
-                        <TextBlock Text="Open Chat" VerticalAlignment="Center" />
+                        <TextBlock Text="{i18n:Tr Shell_OpenChat}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
 
                 <ToggleButton Grid.Column="3"
                               IsChecked="{Binding IsAuxPanelVisible}"
                               HotKey="Ctrl+J"
-                              ToolTip.Tip="Toggle side panel (Ctrl+J)"
+                              ToolTip.Tip="{i18n:Tr Shell_ToggleAuxPanel_Tooltip}"
                               Classes="panel-toggle"
                               Margin="12,0,0,0">
                     <TextBlock Text="◨" />
@@ -136,7 +165,7 @@
                                    VerticalAlignment="Center" />
                         <Button Grid.Column="1"
                                 Command="{Binding ToggleAuxPanelCommand}"
-                                ToolTip.Tip="Hide panel"
+                                ToolTip.Tip="{i18n:Tr Shell_AuxPanel_Hide}"
                                 Classes="panel-close">
                             <TextBlock Text="✕" />
                         </Button>
@@ -144,7 +173,7 @@
                     <Panel Grid.Row="1" Margin="16,0,16,16">
                         <ContentControl Content="{Binding AuxPanelContent}" />
                         <TextBlock IsVisible="{Binding AuxPanelContent, Converter={x:Static ObjectConverters.IsNull}}"
-                                   Text="This panel can host filters, details, notifications or any other contextual tool."
+                                   Text="{i18n:Tr Shell_AuxPanel_Placeholder}"
                                    TextWrapping="Wrap"
                                    FontSize="{StaticResource ArmoniaFontSizeXs}"
                                    Foreground="{StaticResource ArmoniaTextMutedBrush}" />
@@ -165,7 +194,7 @@
                             BorderThickness="1"
                             CornerRadius="{StaticResource ArmoniaRadiusMedium}"
                             Padding="12,8">
-                        <TextBlock Text="Showing sample data — the dashboard is not connected to the API yet."
+                        <TextBlock Text="{i18n:Tr Dashboard_SampleDataNotice}"
                                    FontSize="{StaticResource ArmoniaFontSizeXs}"
                                    Foreground="{StaticResource ArmoniaWarningBrush}" />
                     </Border>
@@ -215,7 +244,7 @@
                             CornerRadius="{StaticResource ArmoniaRadiusLarge}"
                             Padding="16">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="RECENT SESSIONS"
+                            <TextBlock Text="{i18n:Tr Dashboard_RecentSessions}"
                                        FontWeight="SemiBold"
                                        FontSize="{StaticResource ArmoniaFontSizeXs}"
                                        Foreground="{StaticResource ArmoniaTextSecondaryBrush}" />
@@ -258,35 +287,23 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <!-- Placeholder for menu entries without a screen yet -->
-            <StackPanel Grid.Column="1"
-                        IsVisible="{Binding !IsDashboardSelected}"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Spacing="8">
-                <TextBlock Text="{Binding SelectedMenuItem.Title}"
-                           HorizontalAlignment="Center"
-                           FontWeight="Bold"
-                           FontSize="{StaticResource ArmoniaFontSizeXl}"
-                           Foreground="{StaticResource ArmoniaTextPrimaryBrush}" />
-                <TextBlock Text="Coming soon — this screen is not built yet."
-                           HorizontalAlignment="Center"
-                           FontSize="{StaticResource ArmoniaFontSizeSm}"
-                           Foreground="{StaticResource ArmoniaTextMutedBrush}" />
-            </StackPanel>
+            <!-- Pages other than the dashboard (settings, coming-soon placeholders) -->
+            <ContentControl Grid.Column="1"
+                            IsVisible="{Binding !IsDashboardSelected}"
+                            Content="{Binding CurrentPage}" />
 
             <!-- ============================================== -->
             <!-- LEFT: MENU PANEL (COLLAPSIBLE)                 -->
             <!-- ============================================== -->
             <Border Grid.Column="0"
-                    Width="220"
+                    Width="240"
                     IsVisible="{Binding IsMenuPanelVisible}"
                     Background="{StaticResource ArmoniaBgSecondaryBrush}"
                     BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
                     BorderThickness="0,0,1,0"
                     Padding="12,16">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="MENU"
+                    <TextBlock Text="{i18n:Tr Menu_Header}"
                                FontWeight="SemiBold"
                                FontSize="{StaticResource ArmoniaFontSizeXs}"
                                Foreground="{StaticResource ArmoniaTextSecondaryBrush}"
@@ -294,28 +311,64 @@
                     <ItemsControl ItemsSource="{Binding MenuItems}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="vm:NavigationItemViewModel">
-                                <Button Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NavigateCommand}"
-                                        CommandParameter="{Binding}"
-                                        Classes="menu-item"
-                                        Classes.selected="{Binding IsSelected}"
-                                        Margin="0,0,0,4">
-                                    <Grid ColumnDefinitions="Auto, *, Auto">
-                                        <TextBlock Grid.Column="0" Text="{Binding Icon}" Width="24" VerticalAlignment="Center" />
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding Title}"
-                                                   FontSize="{StaticResource ArmoniaFontSizeSm}"
-                                                   VerticalAlignment="Center" />
-                                        <Border Grid.Column="2"
-                                                IsVisible="{Binding !IsAvailable}"
-                                                Background="{StaticResource ArmoniaBgElevatedBrush}"
-                                                CornerRadius="{StaticResource ArmoniaRadiusSmall}"
-                                                Padding="6,1">
-                                            <TextBlock Text="Soon"
-                                                       FontSize="{StaticResource ArmoniaFontSizeXs}"
-                                                       Foreground="{StaticResource ArmoniaTextMutedBrush}" />
-                                        </Border>
-                                    </Grid>
-                                </Button>
+                                <StackPanel Margin="0,0,0,4">
+                                    <Button Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NavigateCommand}"
+                                            CommandParameter="{Binding}"
+                                            Classes="menu-item"
+                                            Classes.selected="{Binding IsSelected}">
+                                        <Grid ColumnDefinitions="Auto, *, Auto">
+                                            <TextBlock Grid.Column="0" Text="{Binding Icon}" Width="24" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Title}"
+                                                       FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                                       VerticalAlignment="Center" />
+                                            <Border Grid.Column="2"
+                                                    IsVisible="{Binding !IsAvailable}"
+                                                    Classes="soon-badge">
+                                                <TextBlock Text="{i18n:Tr Menu_Soon}" />
+                                            </Border>
+                                            <TextBlock Grid.Column="2"
+                                                       IsVisible="{Binding HasChildren}"
+                                                       Text="▸"
+                                                       Classes="chevron"
+                                                       Classes.expanded="{Binding IsExpanded}" />
+                                        </Grid>
+                                    </Button>
+
+                                    <!-- Nested sub-menu (e.g. Configuración › General / Conexiones / Modelos) -->
+                                    <Border Classes="submenu">
+                                        <Border.IsVisible>
+                                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                <Binding Path="HasChildren" />
+                                                <Binding Path="IsExpanded" />
+                                            </MultiBinding>
+                                        </Border.IsVisible>
+                                        <ItemsControl ItemsSource="{Binding Children}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="vm:NavigationItemViewModel">
+                                                    <Button Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NavigateCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Classes="menu-item submenu-item"
+                                                            Classes.selected="{Binding IsSelected}"
+                                                            Margin="0,0,0,2">
+                                                        <Grid ColumnDefinitions="Auto, *, Auto">
+                                                            <TextBlock Grid.Column="0" Text="{Binding Icon}" Width="22" VerticalAlignment="Center" />
+                                                            <TextBlock Grid.Column="1"
+                                                                       Text="{Binding Title}"
+                                                                       FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                                                       VerticalAlignment="Center" />
+                                                            <Border Grid.Column="2"
+                                                                    IsVisible="{Binding !IsAvailable}"
+                                                                    Classes="soon-badge">
+                                                                <TextBlock Text="{i18n:Tr Menu_Soon}" />
+                                                            </Border>
+                                                        </Grid>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Border>
+                                </StackPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

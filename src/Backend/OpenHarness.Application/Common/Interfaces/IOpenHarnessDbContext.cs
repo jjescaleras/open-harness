@@ -11,6 +11,7 @@ public interface IOpenHarnessDbContext
     DbSet<AgentSession> AgentSessions { get; }
     DbSet<ConversationTurn> ConversationTurns { get; }
     DbSet<ToolExecution> ToolExecutions { get; }
+    DbSet<GlobalSettings> GlobalSettings { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

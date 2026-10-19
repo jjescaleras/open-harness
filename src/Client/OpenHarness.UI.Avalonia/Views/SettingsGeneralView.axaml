@@ -1,0 +1,303 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:OpenHarness.UI.Avalonia.ViewModels"
+             xmlns:i18n="using:OpenHarness.UI.Avalonia.Localization"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="900"
+             x:Class="OpenHarness.UI.Avalonia.Views.SettingsGeneralView"
+             x:DataType="vm:SettingsGeneralViewModel">
+
+    <Design.DataContext>
+        <vm:SettingsGeneralViewModel />
+    </Design.DataContext>
+
+    <UserControl.Styles>
+        <!-- One setting: title + description on the left, control on the right, divider below -->
+        <Style Selector="Grid.setting-row">
+            <Setter Property="Margin" Value="0,14" />
+        </Style>
+        <Style Selector="Grid.setting-row > StackPanel">
+            <Setter Property="Spacing" Value="4" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,24,0" />
+        </Style>
+        <Style Selector="TextBlock.setting-title">
+            <Setter Property="FontSize" Value="{StaticResource ArmoniaFontSizeSm}" />
+            <Setter Property="Foreground" Value="{StaticResource ArmoniaTextPrimaryBrush}" />
+        </Style>
+        <Style Selector="TextBlock.setting-description">
+            <Setter Property="FontSize" Value="{StaticResource ArmoniaFontSizeXs}" />
+            <Setter Property="Foreground" Value="{StaticResource ArmoniaTextMutedBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="Separator">
+            <Setter Property="Background" Value="{StaticResource ArmoniaBorderSubtleBrush}" />
+            <Setter Property="Margin" Value="0" />
+        </Style>
+        <Style Selector="ComboBox.setting-combo">
+            <Setter Property="MinWidth" Value="160" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="{StaticResource ArmoniaBgElevatedBrush}" />
+            <Setter Property="CornerRadius" Value="{StaticResource ArmoniaRadiusMedium}" />
+        </Style>
+
+        <!-- Appearance tiles -->
+        <Style Selector="ListBox.tiles">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ListBox.tiles ListBoxItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ListBox.tiles ListBoxItem Border.tile">
+            <Setter Property="BorderBrush" Value="{StaticResource ArmoniaBorderSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="{StaticResource ArmoniaRadiusLarge}" />
+            <Setter Property="Padding" Value="12,14" />
+        </Style>
+        <Style Selector="ListBox.tiles ListBoxItem:selected Border.tile">
+            <Setter Property="BorderBrush" Value="{StaticResource ArmoniaAccentPrimaryBrush}" />
+            <Setter Property="Background" Value="{StaticResource ArmoniaBgElevatedBrush}" />
+        </Style>
+        <Style Selector="ListBox.tiles ListBoxItem:selected /template/ ContentPresenter, ListBox.tiles ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <Style Selector="Button.toolbar">
+            <Setter Property="CornerRadius" Value="{StaticResource ArmoniaRadiusMedium}" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="FontSize" Value="{StaticResource ArmoniaFontSizeSm}" />
+        </Style>
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="{StaticResource ArmoniaAccentPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource ArmoniaTextPrimaryBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer Padding="24">
+        <Border MaxWidth="720"
+                HorizontalAlignment="Left"
+                Background="{StaticResource ArmoniaBgSecondaryBrush}"
+                BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource ArmoniaRadiusLarge}"
+                Padding="20,12,20,16">
+            <StackPanel>
+                <!-- Toolbar: status + actions -->
+                <Grid ColumnDefinitions="*, Auto" Margin="0,4,0,8">
+                    <TextBlock Grid.Column="0"
+                               IsVisible="{Binding HasStatus}"
+                               Text="{Binding StatusMessage}"
+                               Foreground="{Binding StatusColor}"
+                               FontSize="{StaticResource ArmoniaFontSizeXs}"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,0" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                        <Button Classes="toolbar"
+                                Command="{Binding ReloadCommand}"
+                                Content="{i18n:Tr Settings_Reload}" />
+                        <Button Classes="toolbar"
+                                IsVisible="{Binding CanEdit}"
+                                Command="{Binding DiscardCommand}"
+                                Content="{i18n:Tr Settings_Discard}" />
+                        <Button Classes="toolbar primary"
+                                IsVisible="{Binding CanEdit}"
+                                Command="{Binding SaveCommand}"
+                                HotKey="Ctrl+S"
+                                Content="{i18n:Tr Settings_Save}" />
+                    </StackPanel>
+                </Grid>
+
+                <Border IsVisible="{Binding IsReadOnly}"
+                        Background="{StaticResource ArmoniaBgElevatedBrush}"
+                        CornerRadius="{StaticResource ArmoniaRadiusMedium}"
+                        Padding="12,8"
+                        Margin="0,0,0,8">
+                    <TextBlock Text="{i18n:Tr Settings_ReadOnlyNotice}"
+                               FontSize="{StaticResource ArmoniaFontSizeXs}"
+                               Foreground="{StaticResource ArmoniaWarningBrush}" />
+                </Border>
+
+                <Separator />
+
+                <StackPanel IsEnabled="{Binding CanEdit}">
+                    <!-- Permisos -->
+                    <Grid Classes="setting-row" ColumnDefinitions="*, Auto">
+                        <StackPanel>
+                            <TextBlock Classes="setting-title" Text="{i18n:Tr Settings_General_Permission}" />
+                            <TextBlock Classes="setting-description" Text="{i18n:Tr Settings_General_Permission_Description}" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" Classes="setting-combo"
+                                  ItemsSource="{Binding PermissionOptions}"
+                                  SelectedItem="{Binding SelectedPermission}"
+                                  DisplayMemberBinding="{Binding Label, x:DataType=vm:LocalizedOption}" />
+                    </Grid>
+                    <Separator />
+
+                    <!-- Idioma -->
+                    <Grid Classes="setting-row" ColumnDefinitions="*, Auto">
+                        <StackPanel>
+                            <TextBlock Classes="setting-title" Text="{i18n:Tr Settings_General_Language}" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" Classes="setting-combo"
+                                  ItemsSource="{Binding LanguageOptions}"
+                                  SelectedItem="{Binding SelectedLanguage}"
+                                  DisplayMemberBinding="{Binding Label, x:DataType=vm:LocalizedOption}" />
+                    </Grid>
+                    <Separator />
+
+                    <!-- Apariencia -->
+                    <StackPanel Margin="0,14" Spacing="12">
+                        <TextBlock Classes="setting-title" Text="{i18n:Tr Settings_General_Appearance}" />
+                        <ListBox Classes="tiles"
+                                 ItemsSource="{Binding AppearanceOptions}"
+                                 SelectedItem="{Binding SelectedAppearance}">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="3" />
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="vm:LocalizedOption">
+                                    <Border Classes="tile">
+                                        <StackPanel Spacing="6" HorizontalAlignment="Center">
+                                            <TextBlock Text="{Binding Icon}" HorizontalAlignment="Center" FontSize="{StaticResource ArmoniaFontSizeLg}" />
+                                            <TextBlock Text="{Binding Label}" HorizontalAlignment="Center"
+                                                       FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                                       Foreground="{StaticResource ArmoniaTextPrimaryBrush}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                    <Separator />
+
+                    <!-- Tamaño de fuente -->
+                    <Grid Classes="setting-row" ColumnDefinitions="*, Auto">
+                        <StackPanel>
+                            <TextBlock Classes="setting-title" Text="{i18n:Tr Settings_General_FontSize}" />
+                            <TextBlock Classes="setting-description" Text="{i18n:Tr Settings_General_FontSize_Description}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <NumericUpDown Value="{Binding FontSizePx}"
+                                           Minimum="{Binding FontSizeMinimum}"
+                                           Maximum="{Binding FontSizeMaximum}"
+                                           Increment="1"
+                                           FormatString="0"
+                                           Width="120" />
+                            <TextBlock Text="{i18n:Tr Settings_General_FontSize_Unit}"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource ArmoniaTextSecondaryBrush}" />
+                        </StackPanel>
+                    </Grid>
+                    <Separator />
+
+                    <!-- Detalle del trabajo -->
+                    <Grid Classes="setting-row" ColumnDefinitions="*, Auto">
+                        <StackPanel>
+                            <TextBlock Classes="setting-title" Text="{i18n:Tr Settings_General_WorkDetails}" />
+                            <TextBlock Classes="setting-description" Text="{i18n:Tr Settings_General_WorkDetails_Description}" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" Classes="setting-combo"
+                                  ItemsSource="{Binding WorkDetailsOptions}"
+                                  SelectedItem="{Binding SelectedWorkDetails}"
+                                  DisplayMemberBinding="{Binding Label, x:DataType=vm:LocalizedOption}" />
+                    </Grid>
+                    <Separator />
+
+                    <!-- Cuándo contraer el detalle -->
+                    <Grid Classes="setting-row" ColumnDefinitions="*, Auto">
+                        <StackPanel>
+                            <TextBlock Classes="setting-title" Text="{i18n:Tr Settings_General_CollapseWorkDetails}" />
+                            <TextBlock Classes="setting-description" Text="{i18n:Tr Settings_General_CollapseWorkDetails_Description}" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" Classes="setting-combo"
+                                  ItemsSource="{Binding CollapseOptions}"
+                                  SelectedItem="{Binding SelectedCollapse}"
+                                  DisplayMemberBinding="{Binding Label, x:DataType=vm:LocalizedOption}" />
+                    </Grid>
+                    <Separator />
+
+                    <!-- Vista de código -->
+                    <Grid Classes="setting-row" ColumnDefinitions="*, Auto">
+                        <StackPanel>
+                            <TextBlock Classes="setting-title" Text="{i18n:Tr Settings_General_ShowCodingView}" />
+                            <TextBlock Classes="setting-description" Text="{i18n:Tr Settings_General_ShowCodingView_Description}" />
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1"
+                                      IsChecked="{Binding ShowCodingView}"
+                                      OnContent="" OffContent=""
+                                      VerticalAlignment="Center" />
+                    </Grid>
+                    <Separator />
+
+                    <!-- Atajos de teclado -->
+                    <Grid Classes="setting-row" ColumnDefinitions="*, Auto">
+                        <StackPanel>
+                            <TextBlock Classes="setting-title" Text="{i18n:Tr Settings_General_KeyboardShortcuts}" />
+                            <TextBlock Classes="setting-description" Text="{i18n:Tr Settings_General_KeyboardShortcuts_Description}" />
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                Classes="toolbar"
+                                IsEnabled="False"
+                                ToolTip.Tip="{i18n:Tr Settings_General_KeyboardShortcuts_Soon}"
+                                ToolTip.ShowOnDisabled="True"
+                                Content="{i18n:Tr Settings_General_KeyboardShortcuts_Edit}"
+                                VerticalAlignment="Center" />
+                    </Grid>
+                    <Separator />
+
+                    <!-- Envío mientras el agente trabaja -->
+                    <Grid Classes="setting-row" ColumnDefinitions="*, Auto">
+                        <StackPanel>
+                            <TextBlock Classes="setting-title" Text="{i18n:Tr Settings_General_SendBehavior}" />
+                            <TextBlock Classes="setting-description" Text="{i18n:Tr Settings_General_SendBehavior_Description}" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" Classes="setting-combo"
+                                  ItemsSource="{Binding SendBehaviorOptions}"
+                                  SelectedItem="{Binding SelectedSendBehavior}"
+                                  DisplayMemberBinding="{Binding Label, x:DataType=vm:LocalizedOption}" />
+                    </Grid>
+                    <Separator />
+
+                    <!-- Rendimiento y uso -->
+                    <Grid Classes="setting-row" ColumnDefinitions="*, Auto">
+                        <StackPanel>
+                            <TextBlock Classes="setting-title" Text="{i18n:Tr Settings_General_PerformanceUsage}" />
+                            <TextBlock Classes="setting-description" Text="{i18n:Tr Settings_General_PerformanceUsage_Description}" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" Classes="setting-combo"
+                                  ItemsSource="{Binding PerformanceUsageOptions}"
+                                  SelectedItem="{Binding SelectedPerformanceUsage}"
+                                  DisplayMemberBinding="{Binding Label, x:DataType=vm:LocalizedOption}" />
+                    </Grid>
+                    <Separator />
+
+                    <!-- Registro de sesión -->
+                    <Grid Classes="setting-row" ColumnDefinitions="*, Auto">
+                        <StackPanel>
+                            <TextBlock Classes="setting-title" Text="{i18n:Tr Settings_General_UploadSessionLog}" />
+                            <TextBlock Classes="setting-description" Text="{i18n:Tr Settings_General_UploadSessionLog_Description}" />
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1"
+                                      IsChecked="{Binding UploadSessionLog}"
+                                      OnContent="" OffContent=""
+                                      VerticalAlignment="Center" />
+                    </Grid>
+                    <Separator />
+                </StackPanel>
+
+                <!-- Versión -->
+                <TextBlock Text="{Binding VersionText}"
+                           Margin="0,14,0,0"
+                           FontSize="{StaticResource ArmoniaFontSizeSm}"
+                           Foreground="{StaticResource ArmoniaTextPrimaryBrush}" />
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
+</UserControl>

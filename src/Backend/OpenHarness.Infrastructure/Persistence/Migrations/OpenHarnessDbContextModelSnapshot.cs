@@ -151,6 +151,49 @@ namespace OpenHarness.Infrastructure.Persistence.Migrations
                     b.ToTable("conversation_turns", "harness");
                 });
 
+            modelBuilder.Entity("OpenHarness.Domain.Entities.GlobalSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("scope");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by_user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_global_settings");
+
+                    b.HasIndex("Scope")
+                        .IsUnique()
+                        .HasDatabaseName("ix_global_settings_scope");
+
+                    b.HasIndex("UpdatedByUserId")
+                        .HasDatabaseName("ix_global_settings_updated_by_user_id");
+
+                    b.ToTable("global_settings", "harness");
+                });
+
             modelBuilder.Entity("OpenHarness.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -494,6 +537,62 @@ namespace OpenHarness.Infrastructure.Persistence.Migrations
                     b.Navigation("Session");
 
                     b.Navigation("TokenUsage")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("OpenHarness.Domain.Entities.GlobalSettings", b =>
+                {
+                    b.HasOne("OpenHarness.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_global_settings_users_updated_by_user_id");
+
+                    b.OwnsOne("OpenHarness.Domain.ValueObjects.GeneralSettings", "General", b1 =>
+                        {
+                            b1.Property<Guid>("GlobalSettingsId");
+
+                            b1.Property<string>("Appearance")
+                                .IsRequired();
+
+                            b1.Property<string>("CollapseWorkDetails")
+                                .IsRequired();
+
+                            b1.Property<int>("ConversationFontSizePx");
+
+                            b1.Property<string>("DefaultPermissionMode")
+                                .IsRequired();
+
+                            b1.Property<string>("Language")
+                                .IsRequired();
+
+                            b1.Property<string>("PerformanceAndUsage")
+                                .IsRequired();
+
+                            b1.Property<string>("SendBehaviorWhileBusy")
+                                .IsRequired();
+
+                            b1.Property<bool>("ShowCodingView");
+
+                            b1.Property<bool>("UploadSessionLog");
+
+                            b1.Property<string>("WorkDetails")
+                                .IsRequired();
+
+                            b1.HasKey("GlobalSettingsId");
+
+                            b1.ToTable("global_settings", "harness");
+
+                            b1
+                                .ToJson("general")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GlobalSettingsId")
+                                .HasConstraintName("fk_global_settings_global_settings_id");
+                        });
+
+                    b.Navigation("General")
                         .IsRequired();
                 });
 

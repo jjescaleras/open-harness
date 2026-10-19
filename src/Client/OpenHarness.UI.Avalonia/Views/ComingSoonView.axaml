@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OpenHarness.UI.Avalonia.ViewModels"
+             xmlns:i18n="using:OpenHarness.UI.Avalonia.Localization"
+             x:Class="OpenHarness.UI.Avalonia.Views.ComingSoonView"
+             x:DataType="vm:ComingSoonViewModel">
+    <StackPanel HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="8">
+        <TextBlock Text="{Binding Title}"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   FontSize="{StaticResource ArmoniaFontSizeXl}"
+                   Foreground="{StaticResource ArmoniaTextPrimaryBrush}" />
+        <TextBlock Text="{i18n:Tr Shell_ComingSoon_Message}"
+                   HorizontalAlignment="Center"
+                   FontSize="{StaticResource ArmoniaFontSizeSm}"
+                   Foreground="{StaticResource ArmoniaTextMutedBrush}" />
+    </StackPanel>
+</UserControl>

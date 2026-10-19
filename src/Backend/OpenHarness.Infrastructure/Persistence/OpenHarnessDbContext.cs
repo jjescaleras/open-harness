@@ -12,6 +12,7 @@ public sealed class OpenHarnessDbContext(DbContextOptions<OpenHarnessDbContext> 
     public DbSet<AgentSession> AgentSessions => Set<AgentSession>();
     public DbSet<ConversationTurn> ConversationTurns => Set<ConversationTurn>();
     public DbSet<ToolExecution> ToolExecutions => Set<ToolExecution>();
+    public DbSet<GlobalSettings> GlobalSettings => Set<GlobalSettings>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

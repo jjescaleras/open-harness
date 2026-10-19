@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using OpenHarness.Client.Core.Authentication;
@@ -19,7 +20,7 @@ public sealed record ClientUserResult(
     string Email,
     string Role);
 
-public sealed class HarnessApiClient : IAuthApiClient, ISessionsApiClient, IApprovalsApiClient
+public sealed class HarnessApiClient : IAuthApiClient, ISessionsApiClient, IApprovalsApiClient, ISettingsApiClient
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -169,5 +170,53 @@ public sealed class HarnessApiClient : IAuthApiClient, ISessionsApiClient, IAppr
             request.Reason,
             request.RememberForSession,
             cancellationToken);
+    }
+
+    public async Task<ClientGeneralSettingsResponse> GetGeneralSettingsAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync("/api/v1/settings/general", cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<ClientGeneralSettingsResponse>(JsonOptions, cancellationToken)
+            ?? throw new InvalidOperationException("Empty response received when reading general settings.");
+    }
+
+    public async Task<ClientSettingsSaveResult> UpdateGeneralSettingsAsync(
+        ClientGeneralSettings settings,
+        uint expectedVersion,
+        CancellationToken cancellationToken = default)
+    {
+        var payload = new { Settings = settings, ExpectedVersion = expectedVersion };
+        var response = await _httpClient.PutAsJsonAsync("/api/v1/settings/general", payload, cancellationToken);
+
+        switch (response.StatusCode)
+        {
+            case HttpStatusCode.OK:
+                var saved = await response.Content.ReadFromJsonAsync<ClientGeneralSettingsResponse>(JsonOptions, cancellationToken)
+                    ?? throw new InvalidOperationException("Empty response received when saving general settings.");
+                return new ClientSettingsSaveResult(ClientSettingsSaveStatus.Saved, saved);
+            case HttpStatusCode.Conflict:
+                return new ClientSettingsSaveResult(ClientSettingsSaveStatus.Conflict, ErrorMessage: await ReadErrorMessageAsync(response, cancellationToken));
+            case HttpStatusCode.Forbidden:
+                return new ClientSettingsSaveResult(ClientSettingsSaveStatus.Forbidden);
+            case HttpStatusCode.BadRequest:
+                return new ClientSettingsSaveResult(ClientSettingsSaveStatus.Invalid, ErrorMessage: await ReadErrorMessageAsync(response, cancellationToken));
+            default:
+                response.EnsureSuccessStatusCode();
+                throw new InvalidOperationException($"Unexpected status code {(int)response.StatusCode} when saving general settings.");
+        }
+    }
+
+    private static async Task<string?> ReadErrorMessageAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken);
+            return doc.RootElement.TryGetProperty("message", out var message) ? message.GetString() : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 }

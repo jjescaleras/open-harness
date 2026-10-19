@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using OpenHarness.Api.Endpoints;
 using OpenHarness.Application;
+using OpenHarness.Domain.Common;
 using OpenHarness.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,7 +38,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(SettingsEndpoints.AdminOnlyPolicy, policy => policy.RequireRole(Roles.Admin));
+});
 
 var app = builder.Build();
 
@@ -47,6 +51,7 @@ app.UseAuthorization();
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTimeOffset.UtcNow }));
 app.MapAuthEndpoints();
 app.MapSessionEndpoints();
+app.MapSettingsEndpoints();
 
 app.Run();
 
