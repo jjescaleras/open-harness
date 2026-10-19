@@ -18,6 +18,15 @@
     <Color x:Key="ArmoniaTextSecondaryColor">#94A3B8</Color>
     <Color x:Key="ArmoniaTextMutedColor">#64748B</Color>
 
+    <!-- Diff & Syntax Highlighting Colors -->
+    <Color x:Key="ArmoniaDiffAddedBgColor">#163323</Color>
+    <Color x:Key="ArmoniaDiffAddedTextColor">#34D399</Color>
+    <Color x:Key="ArmoniaDiffRemovedBgColor">#3B181E</Color>
+    <Color x:Key="ArmoniaDiffRemovedTextColor">#F87171</Color>
+    <Color x:Key="ArmoniaDiffHeaderColor">#38BDF8</Color>
+    <Color x:Key="ArmoniaThinkingBgColor">#18182B</Color>
+    <Color x:Key="ArmoniaThinkingTextColor">#A5B4FC</Color>
+
     <!-- Solid Color Brushes -->
     <SolidColorBrush x:Key="ArmoniaBgPrimaryBrush" Color="{StaticResource ArmoniaBgPrimaryColor}" />
     <SolidColorBrush x:Key="ArmoniaBgSecondaryBrush" Color="{StaticResource ArmoniaBgSecondaryColor}" />
@@ -35,6 +44,14 @@
     <SolidColorBrush x:Key="ArmoniaTextSecondaryBrush" Color="{StaticResource ArmoniaTextSecondaryColor}" />
     <SolidColorBrush x:Key="ArmoniaTextMutedBrush" Color="{StaticResource ArmoniaTextMutedColor}" />
 
+    <SolidColorBrush x:Key="ArmoniaDiffAddedBgBrush" Color="{StaticResource ArmoniaDiffAddedBgColor}" />
+    <SolidColorBrush x:Key="ArmoniaDiffAddedTextBrush" Color="{StaticResource ArmoniaDiffAddedTextColor}" />
+    <SolidColorBrush x:Key="ArmoniaDiffRemovedBgBrush" Color="{StaticResource ArmoniaDiffRemovedBgColor}" />
+    <SolidColorBrush x:Key="ArmoniaDiffRemovedTextBrush" Color="{StaticResource ArmoniaDiffRemovedTextColor}" />
+    <SolidColorBrush x:Key="ArmoniaDiffHeaderBrush" Color="{StaticResource ArmoniaDiffHeaderColor}" />
+    <SolidColorBrush x:Key="ArmoniaThinkingBgBrush" Color="{StaticResource ArmoniaThinkingBgColor}" />
+    <SolidColorBrush x:Key="ArmoniaThinkingTextBrush" Color="{StaticResource ArmoniaThinkingTextColor}" />
+
     <!-- Corner Radii -->
     <CornerRadius x:Key="ArmoniaRadiusSmall">4</CornerRadius>
     <CornerRadius x:Key="ArmoniaRadiusMedium">8</CornerRadius>
@@ -48,5 +65,12 @@
     <Thickness x:Key="ArmoniaSpacingLg">24</Thickness>
     <Thickness x:Key="ArmoniaSpacingXl">32</Thickness>
 
-</ResourceDictionary>
+    <!-- Font Sizes -->
+    <x:Double x:Key="ArmoniaFontSizeXs">11</x:Double>
+    <x:Double x:Key="ArmoniaFontSizeSm">12</x:Double>
+    <x:Double x:Key="ArmoniaFontSizeMd">14</x:Double>
+    <x:Double x:Key="ArmoniaFontSizeLg">16</x:Double>
+    <x:Double x:Key="ArmoniaFontSizeXl">20</x:Double>
+    <x:Double x:Key="ArmoniaFontSizeXxl">24</x:Double>
 
+</ResourceDictionary>

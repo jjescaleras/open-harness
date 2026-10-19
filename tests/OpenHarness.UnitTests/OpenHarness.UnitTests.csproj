@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\src\Backend\OpenHarness.Application\OpenHarness.Application.csproj" />
     <ProjectReference Include="..\..\src\Backend\OpenHarness.Infrastructure\OpenHarness.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Client\OpenHarness.Client.Core\OpenHarness.Client.Core.csproj" />
+    <ProjectReference Include="..\..\src\Client\OpenHarness.UI.Avalonia\OpenHarness.UI.Avalonia.csproj" />
   </ItemGroup>
 
 </Project>

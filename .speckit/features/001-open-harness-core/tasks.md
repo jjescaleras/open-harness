@@ -130,25 +130,25 @@ Este documento contiene la lista detallada y estructurada de tareas accionables 
   - **Trazabilidad**: `FR-010`
   - **Criterio de Aceptación**: Paleta de colores oscuros, tipografía corporativa, espaciados y recursos visuales definidos de forma centralizada en Avalonia XAML.
 
-- [ ] **T5.2: Shell Principal y Navegación de Sesiones**
+- [x] **T5.2: Shell Principal y Navegación de Sesiones**
   - **Dependencias**: `T5.1`
   - **Archivos Objetivo**: `src/Client/OpenHarness.UI.Avalonia/Views/HarnessShellView.axaml`, `src/Client/OpenHarness.UI.Avalonia/ViewModels/HarnessShellViewModel.cs`
   - **Trazabilidad**: `FR-010`
   - **Criterio de Aceptación**: Ventana principal con layout de 3 paneles (lista de sesiones, área conversacional y panel de telemetría/herramientas) enlazado mediante CommunityToolkit.Mvvm.
 
-- [ ] **T5.3: Vista de Conversación y Búfer de Streaming a 60 FPS**
+- [x] **T5.3: Vista de Conversación y Búfer de Streaming a 60 FPS**
   - **Dependencias**: `T4.4`, `T5.2`
   - **Archivos Objetivo**: `src/Client/OpenHarness.UI.Avalonia/Views/ChatStreamView.axaml`, `src/Client/OpenHarness.UI.Avalonia/ViewModels/ChatStreamViewModel.cs`
   - **Trazabilidad**: `FR-010`, `SC-006`
   - **Criterio de Aceptación**: Componente de chat que acumula deltas SSE y actualiza la vista a 60 FPS mediante `PeriodicTimer` (16 ms) sin congelar el hilo `Dispatcher.UIThread`.
 
-- [ ] **T5.4: Integración de AvaloniaEdit para Visualización de Diffs**
+- [x] **T5.4: Integración de AvaloniaEdit para Visualización de Diffs**
   - **Dependencias**: `T5.3`
   - **Archivos Objetivo**: `src/Client/OpenHarness.UI.Avalonia/Controls/DiffEditorControl.axaml`
   - **Trazabilidad**: `FR-010`, `US-004`
   - **Criterio de Aceptación**: Bloques de código y propuestas de diffs renderizados con `Avalonia.AvaloniaEdit` y resaltado de sintaxis coloreado.
 
-- [ ] **T5.5: Diálogo Modal de Aprobación de Sandbox**
+- [x] **T5.5: Diálogo Modal de Aprobación de Sandbox**
   - **Dependencias**: `T4.1`, `T5.2`
   - **Archivos Objetivo**: `src/Client/OpenHarness.UI.Avalonia/Views/SandboxApprovalDialog.axaml`, `src/Client/OpenHarness.UI.Avalonia/ViewModels/SandboxApprovalViewModel.cs`
   - **Trazabilidad**: `FR-010`, `SC-005`, `EC-005`

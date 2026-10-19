@@ -1,23 +1,21 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:OpenHarness.UI.Avalonia.ViewModels"
+        xmlns:views="using:OpenHarness.UI.Avalonia.Views"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1400" d:DesignHeight="900"
+        Width="1400" Height="900"
+        WindowStartupLocation="CenterScreen"
         x:Class="OpenHarness.UI.Avalonia.Views.MainWindow"
-        x:DataType="vm:MainViewModel"
+        x:DataType="vm:HarnessShellViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="OpenHarness.UI.Avalonia">
+        Title="Open Harness - Agentic Engineering Workspace"
+        Background="{StaticResource ArmoniaBgPrimaryBrush}">
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainViewModel />
+        <vm:HarnessShellViewModel />
     </Design.DataContext>
 
-    <TextBox Text="{Binding Greeting}"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center" />
-             
-
+    <views:HarnessShellView />
 </Window>

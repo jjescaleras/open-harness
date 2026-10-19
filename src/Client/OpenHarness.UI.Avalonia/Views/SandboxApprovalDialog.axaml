@@ -1,0 +1,194 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:OpenHarness.UI.Avalonia.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="620" d:DesignHeight="420"
+        Width="620" Height="440"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        x:Class="OpenHarness.UI.Avalonia.Views.SandboxApprovalDialog"
+        x:DataType="vm:SandboxApprovalViewModel"
+        Title="Sandbox Authorization Required"
+        Background="{StaticResource ArmoniaBgPrimaryBrush}">
+
+    <Border Padding="24" Background="{StaticResource ArmoniaBgPrimaryBrush}">
+        <Grid RowDefinitions="Auto, Auto, *, Auto, Auto" Margin="0">
+            <!-- Header with Title and Countdown Badge -->
+            <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0,0,0,16">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="🛡️" FontSize="20" VerticalAlignment="Center" />
+                    <TextBlock Text="Sandbox Authorization Request"
+                               FontSize="{StaticResource ArmoniaFontSizeXl}"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource ArmoniaTextPrimaryBrush}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Countdown Timer Badge -->
+                <Border Grid.Column="1"
+                        Background="{StaticResource ArmoniaBgElevatedBrush}"
+                        BorderBrush="{StaticResource ArmoniaWarningBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource ArmoniaRadiusMedium}"
+                        Padding="10,4">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="⏳" FontSize="12" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding RemainingTimeFormatted}"
+                                   FontWeight="Bold"
+                                   FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                   Foreground="{StaticResource ArmoniaWarningBrush}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Risk Warning Notice -->
+            <Border Grid.Row="1"
+                    Background="{StaticResource ArmoniaDiffRemovedBgBrush}"
+                    BorderBrush="{StaticResource ArmoniaDangerBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource ArmoniaRadiusMedium}"
+                    Padding="12,10"
+                    Margin="0,0,0,16">
+                <Grid ColumnDefinitions="Auto, *">
+                    <TextBlock Grid.Column="0" Text="⚠️" FontSize="16" Margin="0,0,10,0" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1"
+                               Text="The agent is attempting an action that requires explicit human authorization under your workspace policy."
+                               FontSize="{StaticResource ArmoniaFontSizeSm}"
+                               Foreground="{StaticResource ArmoniaDiffRemovedTextBrush}"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+
+            <!-- Command / Target Details -->
+            <Border Grid.Row="2"
+                    Background="{StaticResource ArmoniaBgSecondaryBrush}"
+                    BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource ArmoniaRadiusMedium}"
+                    Padding="14"
+                    Margin="0,0,0,16">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="{Binding ToolName, StringFormat='Tool: {0}'}"
+                                   FontWeight="SemiBold"
+                                   FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                   Foreground="{StaticResource ArmoniaAccentPrimaryBrush}" />
+
+                        <TextBlock Text="Target / Command:"
+                                   FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                   Foreground="{StaticResource ArmoniaTextMutedBrush}" />
+
+                        <Border Background="{StaticResource ArmoniaBgPrimaryBrush}"
+                                CornerRadius="{StaticResource ArmoniaRadiusSmall}"
+                                Padding="10,8">
+                            <SelectableTextBlock Text="{Binding CommandOrTarget}"
+                                                 FontFamily="Consolas, Menlo, Monospace"
+                                                 FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                                 Foreground="{StaticResource ArmoniaTextPrimaryBrush}"
+                                                 TextWrapping="Wrap" />
+                        </Border>
+
+                        <TextBlock Text="Arguments Payload:"
+                                   FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                   Foreground="{StaticResource ArmoniaTextMutedBrush}"
+                                   IsVisible="{Binding ArgumentsJson, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                        <Border Background="{StaticResource ArmoniaBgPrimaryBrush}"
+                                CornerRadius="{StaticResource ArmoniaRadiusSmall}"
+                                Padding="10,8"
+                                IsVisible="{Binding ArgumentsJson, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                            <SelectableTextBlock Text="{Binding ArgumentsJson}"
+                                                 FontFamily="Consolas, Menlo, Monospace"
+                                                 FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                                 Foreground="{StaticResource ArmoniaTextSecondaryBrush}"
+                                                 TextWrapping="Wrap" />
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Reason Input (Optional) -->
+            <Grid Grid.Row="3" Margin="0,0,0,16">
+                <TextBox Text="{Binding Reason, Mode=TwoWay}"
+                         PlaceholderText="Optional audit note or decision rationale..."
+                         FontSize="{StaticResource ArmoniaFontSizeSm}"
+                         Background="{StaticResource ArmoniaBgElevatedBrush}"
+                         Foreground="{StaticResource ArmoniaTextPrimaryBrush}"
+                         BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
+                         CornerRadius="{StaticResource ArmoniaRadiusMedium}"
+                         Padding="10,8" />
+            </Grid>
+
+            <!-- Action Buttons with Keyboard Shortcuts Badges -->
+            <Grid Grid.Row="4" ColumnDefinitions="Auto, *, Auto, Auto">
+                <!-- Deny Button [Esc] -->
+                <Button Grid.Column="0"
+                        Command="{Binding DenyCommand}"
+                        Background="{StaticResource ArmoniaDiffRemovedBgBrush}"
+                        BorderBrush="{StaticResource ArmoniaDangerBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource ArmoniaRadiusMedium}"
+                        Padding="16,10">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="[Esc]"
+                                   FontWeight="Bold"
+                                   FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                   Foreground="{StaticResource ArmoniaDangerBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Deny"
+                                   FontWeight="SemiBold"
+                                   FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                   Foreground="{StaticResource ArmoniaDangerBrush}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Approve & Remember [Ctrl+Enter] -->
+                <Button Grid.Column="2"
+                        Command="{Binding ApproveAndRememberCommand}"
+                        Background="{StaticResource ArmoniaBgElevatedBrush}"
+                        BorderBrush="{StaticResource ArmoniaAccentPrimaryBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource ArmoniaRadiusMedium}"
+                        Padding="16,10"
+                        Margin="0,0,10,0">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="[Ctrl+Enter]"
+                                   FontWeight="Bold"
+                                   FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                   Foreground="{StaticResource ArmoniaAccentPrimaryBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Allow Always"
+                                   FontWeight="SemiBold"
+                                   FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                   Foreground="{StaticResource ArmoniaTextPrimaryBrush}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Approve Once [Enter] -->
+                <Button Grid.Column="3"
+                        Command="{Binding ApproveOnceCommand}"
+                        Background="{StaticResource ArmoniaSuccessBrush}"
+                        CornerRadius="{StaticResource ArmoniaRadiusMedium}"
+                        Padding="20,10">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="[Enter]"
+                                   FontWeight="Bold"
+                                   FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                   Foreground="#042F2E"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Allow Once"
+                                   FontWeight="Bold"
+                                   FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                   Foreground="#042F2E"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

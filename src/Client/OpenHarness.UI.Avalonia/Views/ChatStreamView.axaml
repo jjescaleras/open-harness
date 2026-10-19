@@ -1,0 +1,183 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:OpenHarness.UI.Avalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="OpenHarness.UI.Avalonia.Views.ChatStreamView"
+             x:DataType="vm:ChatStreamViewModel"
+             Background="{StaticResource ArmoniaBgPrimaryBrush}">
+
+    <Grid RowDefinitions="*, Auto">
+        <!-- Messages Area -->
+        <ScrollViewer x:Name="MessagesScrollViewer"
+                      Grid.Row="0"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto"
+                      Padding="24,16">
+            <ItemsControl ItemsSource="{Binding Messages}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vm:ChatMessageViewModel">
+                        <Grid Margin="0,8">
+                            <!-- User Message (Right Aligned) -->
+                            <Border IsVisible="{Binding IsUser}"
+                                    HorizontalAlignment="Right"
+                                    MaxWidth="680"
+                                    Background="{StaticResource ArmoniaBgElevatedBrush}"
+                                    BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource ArmoniaRadiusLarge}"
+                                    Padding="16,12">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="You"
+                                               FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ArmoniaAccentPrimaryBrush}" />
+                                    <SelectableTextBlock Text="{Binding Content}"
+                                                         TextWrapping="Wrap"
+                                                         FontSize="{StaticResource ArmoniaFontSizeMd}"
+                                                         Foreground="{StaticResource ArmoniaTextPrimaryBrush}" />
+                                    <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:HH:mm}'}"
+                                               FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                               Foreground="{StaticResource ArmoniaTextMutedBrush}"
+                                               HorizontalAlignment="Right" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Assistant Message (Left Aligned) -->
+                            <Border IsVisible="{Binding IsAssistant}"
+                                    HorizontalAlignment="Left"
+                                    MaxWidth="760"
+                                    Background="{StaticResource ArmoniaBgSecondaryBrush}"
+                                    BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource ArmoniaRadiusLarge}"
+                                    Padding="16,12">
+                                <StackPanel Spacing="8">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="Pi Agent"
+                                                   FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ArmoniaSuccessBrush}" />
+                                        <TextBlock Text="Streaming..."
+                                                   FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                                   Foreground="{StaticResource ArmoniaWarningBrush}"
+                                                   IsVisible="{Binding IsStreaming}" />
+                                    </StackPanel>
+
+                                    <!-- Thinking Box (if present) -->
+                                    <Border IsVisible="{Binding HasThinking}"
+                                            Background="{StaticResource ArmoniaThinkingBgBrush}"
+                                            BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="{StaticResource ArmoniaRadiusMedium}"
+                                            Padding="12,8">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="Thinking Process"
+                                                       FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource ArmoniaThinkingTextBrush}" />
+                                            <SelectableTextBlock Text="{Binding ThinkingContent}"
+                                                                 TextWrapping="Wrap"
+                                                                 FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                                                 Foreground="{StaticResource ArmoniaTextSecondaryBrush}" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Main Response Content -->
+                                    <SelectableTextBlock Text="{Binding Content}"
+                                                         TextWrapping="Wrap"
+                                                         FontSize="{StaticResource ArmoniaFontSizeMd}"
+                                                         Foreground="{StaticResource ArmoniaTextPrimaryBrush}" />
+
+                                    <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:HH:mm}'}"
+                                               FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                               Foreground="{StaticResource ArmoniaTextMutedBrush}"
+                                               HorizontalAlignment="Right" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Tool Execution Card -->
+                            <Border IsVisible="{Binding IsTool}"
+                                    HorizontalAlignment="Left"
+                                    MaxWidth="600"
+                                    Background="{StaticResource ArmoniaBgElevatedBrush}"
+                                    BorderBrush="{StaticResource ArmoniaBorderStrongBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource ArmoniaRadiusMedium}"
+                                    Padding="12,8">
+                                <StackPanel Spacing="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="⚙"
+                                                   Foreground="{StaticResource ArmoniaWarningBrush}" />
+                                        <TextBlock Text="{Binding ToolName, StringFormat='Tool: {0}'}"
+                                                   FontWeight="SemiBold"
+                                                   FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                                   Foreground="{StaticResource ArmoniaTextPrimaryBrush}" />
+                                        <Border CornerRadius="{StaticResource ArmoniaRadiusSmall}"
+                                                Background="{StaticResource ArmoniaBgSecondaryBrush}"
+                                                Padding="6,2">
+                                            <TextBlock Text="{Binding ToolStatus}"
+                                                       FontSize="{StaticResource ArmoniaFontSizeXs}"
+                                                       Foreground="{StaticResource ArmoniaTextSecondaryBrush}" />
+                                        </Border>
+                                    </StackPanel>
+                                    <SelectableTextBlock Text="{Binding Content}"
+                                                         TextWrapping="Wrap"
+                                                         FontFamily="Consolas, Menlo, Monospace"
+                                                         FontSize="{StaticResource ArmoniaFontSizeSm}"
+                                                         Foreground="{StaticResource ArmoniaTextSecondaryBrush}" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Prompt Input Bar -->
+        <Border Grid.Row="1"
+                Background="{StaticResource ArmoniaBgSecondaryBrush}"
+                BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="16,12">
+            <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
+                <TextBox Grid.Row="0" Grid.Column="0"
+                         x:Name="PromptTextBox"
+                         Text="{Binding CurrentPrompt, Mode=TwoWay}"
+                         PlaceholderText="Ask Pi to build, test or refactor... (Press Enter or click Send)"
+                         AcceptsReturn="True"
+                         MaxHeight="120"
+                         CornerRadius="{StaticResource ArmoniaRadiusMedium}"
+                         Background="{StaticResource ArmoniaBgElevatedBrush}"
+                         Foreground="{StaticResource ArmoniaTextPrimaryBrush}"
+                         BorderBrush="{StaticResource ArmoniaBorderSubtleBrush}"
+                         Padding="12,10"
+                         FontSize="{StaticResource ArmoniaFontSizeMd}"
+                         VerticalContentAlignment="Center"
+                         Margin="0,0,12,0" />
+
+                <Button Grid.Row="0" Grid.Column="1"
+                        Command="{Binding SendMessageCommand}"
+                        Background="{StaticResource ArmoniaAccentPrimaryBrush}"
+                        Foreground="{StaticResource ArmoniaTextPrimaryBrush}"
+                        FontWeight="SemiBold"
+                        CornerRadius="{StaticResource ArmoniaRadiusMedium}"
+                        Padding="20,10"
+                        VerticalAlignment="Stretch">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="Send" VerticalAlignment="Center" />
+                        <TextBlock Text="➤" VerticalAlignment="Center" FontSize="12" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Status Line -->
+                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                           Text="{Binding StatusMessage}"
+                           FontSize="{StaticResource ArmoniaFontSizeXs}"
+                           Foreground="{StaticResource ArmoniaTextMutedBrush}"
+                           Margin="4,6,0,0" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
