@@ -119,6 +119,82 @@
         "focus": false,
         "panel": "shared"
       }
+    },
+    {
+      "label": "Apply Database Migrations (EF Core)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "ef",
+        "database",
+        "update",
+        "--project",
+        "src/Backend/OpenHarness.Infrastructure",
+        "--startup-project",
+        "src/Backend/OpenHarness.Api"
+      ],
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Add Database Migration (EF Core)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "ef",
+        "migrations",
+        "add",
+        "${input:migrationName}",
+        "--project",
+        "src/Backend/OpenHarness.Infrastructure",
+        "--startup-project",
+        "src/Backend/OpenHarness.Api",
+        "--output-dir",
+        "Persistence/Migrations"
+      ],
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Check Database Status & Tables",
+      "command": "docker",
+      "type": "shell",
+      "args": [
+        "exec",
+        "open-harness-postgres",
+        "psql",
+        "-U",
+        "harness",
+        "-d",
+        "open_harness",
+        "-c",
+        "\\dt harness.*"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "migrationName",
+      "type": "promptString",
+      "description": "Enter the name for the new EF Core migration:",
+      "default": "NewMigration"
     }
   ]
 }
